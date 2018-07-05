@@ -136,7 +136,9 @@ def create_initial_config(args):
 
   a.keystore_jks = args.keystore_jks
   a.keystore_root = args.keys_root
-  a.write_config_file(args.conf)  
+  
+  if args.create_config:
+    a.write_config_file(args.conf)  
 
 def execute_post_config(args):
   a=propertyhandler.propertyhandler()
@@ -203,6 +205,10 @@ def run():
   
   parser_init.add_argument(
     "--create-keys", dest="create_keys", action="store_true", help="if the keystore and keyzcar keys should be generated",
+  )
+
+  parser_init.add_argument(
+    "--create-config", dest="create_config", action="store_true", help="if the default configuration file should be created",
   )
 
   parser_init.add_argument(
