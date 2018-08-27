@@ -100,6 +100,11 @@ def create_priv_pub_keys(keys_root, nodename):
 
 def create_initial_config(args):
   a=propertyhandler.propertyhandler()
+  
+  if not args.create_keys and not args.create_config:
+    print("Must specify either --create-keys or --create-config when initializing configuration")
+    sys.exit(127)
+  
   if args.questions:
     a.nodename = read_input("Node name", socket.gethostname())
     a.db_dbname = read_input("Database name", "baltrad")
