@@ -8,8 +8,8 @@ import shutil
 class propertyhandler(object):
   def __init__(self):
     super(propertyhandler, self).__init__()
-    self.tomcat_user = "tomcat8"
-    self.tomcat_group = "tomcat8"
+    self.tomcat_user = "tomcat7"
+    self.tomcat_group = "tomcat7"
     self.baltrad_user = "baltrad"
     self.baltrad_group = "baltrad" 
     self.db_username="baltrad"
