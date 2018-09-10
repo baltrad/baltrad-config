@@ -292,7 +292,7 @@ class propertyhandler(object):
       elif row.startswith("LOGLEVEL") and self.rave_loglevel is not None:
         row = "LOGLEVEL = \"%s\"\n"%self.rave_loglevel
       elif row.startswith("LOGID") and self.rave_logid is not None:
-        row = "LOGID = 'PGF[%s]'\n"%self.rave_logid
+        row = "LOGID = %s\n"%self.rave_logid
       nrows.append(row)    
     fp = open(ravedefinesfile, "w")
     for row in nrows:
