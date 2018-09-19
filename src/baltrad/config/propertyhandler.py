@@ -171,7 +171,7 @@ class propertyhandler(object):
     s += "baltrad.framepublisher.max_poolsize = %s\n"%self.baltrad_framepublisher_max_poolsize
     s += "baltrad.framepublisher.queuesize = %s\n"%self.baltrad_framepublisher_queuesize
     s += "\n"
-    s += "#rave.ctpath=/opt/baltrad/MSG_CT"
+    s += "#rave.ctpath=%s\n"%self.rave_ctpath
     s += "rave.pgfs=%s\n"%self.rave_pgfs
     s += "rave.loglevel=%s\n"%self.rave_loglevel
     s += "rave.logid=%s\n"%self.rave_logid
