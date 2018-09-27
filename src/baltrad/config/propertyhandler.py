@@ -8,8 +8,6 @@ import shutil
 class propertyhandler(object):
   def __init__(self):
     super(propertyhandler, self).__init__()
-    self.tomcat_user = "tomcat7"
-    self.tomcat_group = "tomcat7"
     self.baltrad_user = "baltrad"
     self.baltrad_group = "baltrad" 
     self.db_username="baltrad"
@@ -61,10 +59,6 @@ class propertyhandler(object):
   def open_config_file(self, config_file):
     properties = self._load_properties(config_file)
     self.with_rave = properties["baltrad.with.rave"] == "true"
-    if "tomcat.user" in properties:
-      self.tomcat_user = properties["tomcat.user"]
-    if "tomcat.group" in properties:
-      self.tomcat_group = properties["tomcat.group"]
     if "baltrad.user" in properties:
       self.baltrad_user = properties["baltrad.user"]
     if "baltrad.group" in properties:
@@ -128,8 +122,6 @@ class propertyhandler(object):
     s += "# Used to know if rave_defines.py should be configured or not.\n"
     s += "baltrad.with.rave = %s\n"%"true" if self.with_rave else "false"
     s += "\n"
-    s += "tomcat.user = %s\n"%self.tomcat_user
-    s += "tomcat.group = %s\n"%self.tomcat_group
     s += "baltrad.user = %s\n"%self.baltrad_user
     s += "baltrad.group = %s\n"%self.baltrad_group
     s += "\n"

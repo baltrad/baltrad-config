@@ -59,7 +59,7 @@ def create_keystore(keystore):
       print("Must specify a keystore password")
       kpwd = None
 
-  args = ["keytool", "-genkey", "-alias", "tomcat", "-keyalg", "RSA", "-validity", "3650", "-keypass", kpwd, "-storepass", kpwd, "-keystore", keystore]
+  args = ["keytool", "-genkey", "-alias", "baltrad", "-keyalg", "RSA", "-validity", "3650", "-keypass", kpwd, "-storepass", kpwd, "-keystore", keystore]
   ocode = subprocess.call(args)
   if ocode != 0:
     raise Exception("keytool command failed for keystore creation")
@@ -159,16 +159,15 @@ def execute_post_config(args):
   os.chmod(args.dexdbfile, 0o660)
   os.chmod(args.dexfcfile, 0o660)
   
-  # Change owner to root:tomcat8
+  # Change owner to root:baltrad
   uid = pwd.getpwnam("root").pw_uid
-  tomcat_gid = grp.getgrnam(a.tomcat_group).gr_gid
   baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
   baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
   if getpass.getuser() == "root":
     os.chown(args.bltnodefile, uid, baltrad_gid)
-    os.chown(args.dexfile, uid, tomcat_gid)
-    os.chown(args.dexdbfile, uid, tomcat_gid)
-    os.chown(args.dexfcfile, uid, tomcat_gid)
+    os.chown(args.dexfile, uid, baltrad_gid)
+    os.chown(args.dexdbfile, uid, baltrad_gid)
+    os.chown(args.dexfcfile, uid, baltrad_gid)
     os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
   else:
     print("WARNING! Could not change ownership of configuration files:")
