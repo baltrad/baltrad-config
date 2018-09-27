@@ -55,6 +55,7 @@ class propertyhandler(object):
   def write_config_file(self, config_file):
     with open(config_file, "w") as fp:
       fp.write(str(self))
+    os.chmod(config_file,0o600)
 
   def open_config_file(self, config_file):
     properties = self._load_properties(config_file)
