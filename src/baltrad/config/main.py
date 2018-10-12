@@ -153,7 +153,8 @@ def execute_post_config(args):
   a.write_dex_properties(args.dexfile)
   a.write_dex_db_properties(args.dexdbfile)
   a.write_dex_fc_properties(args.dexfcfile)
-  a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
+  if not args.no_rave_config:
+    a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
   os.chmod(args.bltnodefile, 0o660)
   os.chmod(args.dexfile, 0o660)
   os.chmod(args.dexdbfile, 0o660)
@@ -168,14 +169,16 @@ def execute_post_config(args):
     os.chown(args.dexfile, uid, baltrad_gid)
     os.chown(args.dexdbfile, uid, baltrad_gid)
     os.chown(args.dexfcfile, uid, baltrad_gid)
-    os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
+    if not args.no_rave_config:
+      os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
   else:
     print("WARNING! Could not change ownership of configuration files:")
     print("%s"%args.bltnodefile)
     print("%s"%args.dexfile)
     print("%s"%args.dexdbfile)
     print("%s"%args.dexfcfile)
-    print("%s"%args.ravedefinesfile)
+    if not args.no_rave_config:
+      print("%s"%args.ravedefinesfile)
   
   if args.install_database or args.update_database:
     db = database.baltrad_database(args.bltnodefile, a.db_hostname, a.db_dbname, a.db_username, a.db_password, a.bdb_binaries, a.beast_sql_file_dir, a.dex_sql_file_dir)
@@ -245,6 +248,10 @@ def run():
   
   parser_setup.add_argument(
     "--ravedefinesfile=", dest="ravedefinesfile", default="/opt/baltrad/rave/Lib/rave_defines.py", help="Where rave_defines.py is located"
+  )
+  
+  parser_setup.add_argument(
+    "--no-rave-config", dest="no_rave_config", action="store_true", help="if rave defines file should be updated",
   )
   
   parser_setup.add_argument(

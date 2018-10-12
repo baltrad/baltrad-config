@@ -20,6 +20,7 @@ import sys, os, subprocess, tempfile, re
 #import shutil
 #import jprops
 import psycopg2, psycopg2.extensions
+import traceback
 
 ##
 # The class that provides support for creating, upgrading and dropping all
@@ -55,17 +56,35 @@ class baltrad_database(object):
   # Creates the database tables
   #
   def create(self):
-    self._create_bdb()
-    self._create_beast()
-    self._create_dex()
+    try:
+      self._create_bdb()
+    except Exception as e:
+      traceback.print_exc(e)
+    try:
+      self._create_beast()
+    except Exception as e:
+      traceback.print_exc(e)
+    try:
+      self._create_dex()
+    except Exception as e:
+      traceback.print_exc(e)
 
   ##
   # Upgrades the database tables
   #
   def upgrade(self):
-    self._upgrade_bdb()
-    self._upgrade_beast()
-    self._upgrade_dex()
+    try:
+      self._upgrade_bdb()
+    except Exception as e:
+      traceback.print_exc(e)
+    try:
+      self._upgrade_beast()
+    except Exception as e:
+      traceback.print_exc(e)
+    try:
+      self._upgrade_dex()
+    except Exception as e:
+      traceback.print_exc(e)
 
   ##
   # Updates the admin users password

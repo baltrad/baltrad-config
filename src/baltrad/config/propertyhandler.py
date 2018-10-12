@@ -22,8 +22,8 @@ class propertyhandler(object):
     self.dex_uri = "http://localhost:8080/BaltradDex/post_file.htm"
     self.prepare_threshold = -1
     self.bdb_binaries = "/usr/bin"
-    self.beast_sql_file_dir = "/opt/baltrad/baltrad-beast/sql"
-    self.dex_sql_file_dir = "/opt/baltrad/baltrad-dex/sql"
+    self.beast_sql_file_dir = "/usr/share/baltrad/baltrad-beast/sql"
+    self.dex_sql_file_dir = "/usr/share/baltrad/baltrad-dex/sql"
     self.bdb_server_type = "cherrypy"
     self.bdb_server_cherrypy_threads = 10
     self.bdb_server_cherrypy_backlog = 5
