@@ -8,7 +8,6 @@ import string
 import subprocess
 import shutil
 import pwd, grp
-import getpass
 
 from baltrad.config import propertyhandler
 from baltrad.config import database
@@ -145,6 +144,9 @@ def create_initial_config(args):
   if args.create_config:
     a.write_config_file(args.conf)  
 
+def get_current_user():
+  return pwd.getpwuid(os.getuid())[0]
+
 def execute_post_config(args):
   a=propertyhandler.propertyhandler()
   a.open_config_file(args.conf)
@@ -164,7 +166,7 @@ def execute_post_config(args):
   uid = pwd.getpwnam("root").pw_uid
   baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
   baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
-  if getpass.getuser() == "root":
+  if get_current_user() == "root":
     os.chown(args.bltnodefile, uid, baltrad_gid)
     os.chown(args.dexfile, uid, baltrad_gid)
     os.chown(args.dexdbfile, uid, baltrad_gid)
