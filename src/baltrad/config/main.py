@@ -100,6 +100,10 @@ def create_priv_pub_keys(keys_root, nodename):
 def create_initial_config(args):
   a=propertyhandler.propertyhandler()
   
+  uid = pwd.getpwnam("root").pw_uid
+  baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
+  baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
+    
   if not args.create_keys and not args.create_config:
     print("Must specify either --create-keys or --create-config when initializing configuration")
     sys.exit(127)
@@ -112,6 +116,11 @@ def create_initial_config(args):
     a.db_hostname = read_input("Database hostname", "localhost")
 
   if args.create_keys:
+    if not os.path.exists(args.keys_root):
+      os.makedirs(args.keys_root)
+      if get_current_user() == "root":
+        os.chown(args.keys_root, baltrad_uid, baltrad_gid)
+
     if os.path.exists(args.keystore_jks):
       x = read_input("%s already exists, overwrite (y/n)?"%args.keystore_jks, "n")
       if x=="y":
