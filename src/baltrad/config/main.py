@@ -247,7 +247,7 @@ def run():
   )
   
   parser_setup.add_argument(
-    "--ravedefinesfile=", dest="ravedefinesfile", default="/opt/baltrad/rave/Lib/rave_defines.py", help="Where rave_defines.py is located"
+    "--ravedefinesfile=", dest="ravedefinesfile", default="/etc/baltrad/rave/Lib/rave_defines.py", help="Where rave_defines.py is located"
   )
   
   parser_setup.add_argument(
