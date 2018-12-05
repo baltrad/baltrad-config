@@ -19,7 +19,7 @@ class propertyhandler(object):
     self.keystore_root="/etc/baltrad/bltnode-keys"
     self.keystore_jks="%s/keystore.jks"%self.keystore_root
     self.with_rave = True
-    self.dex_uri = "http://localhost:8080/BaltradDex/post_file.htm"
+    self.dex_uri = "http://localhost:8080/BaltradDex"
     self.prepare_threshold = -1
     self.bdb_binaries = "/usr/bin"
     self.beast_sql_file_dir = "/usr/share/baltrad/baltrad-beast/sql"
