@@ -101,9 +101,8 @@ def create_initial_config(args):
   a=propertyhandler.propertyhandler()
   
   uid = pwd.getpwnam("root").pw_uid
-  baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
-  baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
-    
+  a.baltrad_user = args.baltrad_user
+  a.baltrad_group = args.baltrad_group
   if not args.create_keys and not args.create_config:
     print("Must specify either --create-keys or --create-config when initializing configuration")
     sys.exit(127)
@@ -119,6 +118,8 @@ def create_initial_config(args):
     if not os.path.exists(args.keys_root):
       os.makedirs(args.keys_root)
       if get_current_user() == "root":
+        baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
+        baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
         os.chown(args.keys_root, baltrad_uid, baltrad_gid)
 
     if os.path.exists(args.keystore_jks):
@@ -235,6 +236,14 @@ def run():
     
   parser_init.add_argument(
     "--keystore=", dest="keystore_jks", default="/etc/baltrad/bltnode-keys/keystore.jks", help="location of the keystore"
+  )
+  
+  parser_init.add_argument(
+    "--user=", dest="baltrad_user", default="baltrad", help="name of user owning the keystore"
+  )
+  
+  parser_init.add_argument(
+    "--group=", dest="baltrad_group", default="baltrad", help="group name of user owning the keystore"
   )
   
   parser_setup.add_argument(
