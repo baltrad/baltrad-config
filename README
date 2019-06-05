@@ -1,3 +1,5 @@
 baltrad-config [--conf=/etc/baltrad/localhost.properties] --create-keys --questions init
 
 baltrad-config [--conf=/etc/baltrad/localhost.properties] setup
+
+...
