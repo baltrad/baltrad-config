@@ -45,6 +45,7 @@ class propertyhandler(object):
     self.rave_pgfs = "4"
     self.rave_loglevel = "info"
     self.rave_logid = "'PGF[rave.%s]'"%self.nodename
+    self.rave_centerid="ORG:82"
     
     self.post_config_scripts = []
     
@@ -111,6 +112,8 @@ class propertyhandler(object):
       self.rave_loglevel = properties["rave.loglevel"]
     if "rave.logid" in properties:
       self.rave_logid = properties["rave.logid"]
+    if "rave.centerid" in properties:
+      self.rave_centerid = properties["rave.centerid"]
     
     index = 1
     self.post_config_scripts=[]
@@ -168,6 +171,7 @@ class propertyhandler(object):
     s += "rave.pgfs=%s\n"%self.rave_pgfs
     s += "rave.loglevel=%s\n"%self.rave_loglevel
     s += "rave.logid=%s\n"%self.rave_logid
+    s += "rave.centerid=%s\n"%self.rave_centerid
     
     s += "\n\n"
     s += "# Additional post config scripts.\n"
@@ -286,6 +290,8 @@ class propertyhandler(object):
         row = "LOGLEVEL = \"%s\"\n"%self.rave_loglevel
       elif row.startswith("LOGID") and self.rave_logid is not None:
         row = "LOGID = %s\n"%self.rave_logid
+      elif row.startswith("CENTER_ID") and self.rave_centerid is not None:
+        row = "CENTER_ID = \"%s\"\n"%self.rave_centerid
       nrows.append(row)    
     fp = open(ravedefinesfile, "w")
     for row in nrows:
