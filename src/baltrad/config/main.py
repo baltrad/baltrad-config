@@ -99,19 +99,23 @@ def create_priv_pub_keys(keys_root, nodename):
 def create_initial_config(args):
   a=propertyhandler.propertyhandler()
   
-  uid = pwd.getpwnam("root").pw_uid
-  a.baltrad_user = args.baltrad_user
-  a.baltrad_group = args.baltrad_group
-  if not args.create_keys and not args.create_config:
-    print("Must specify either --create-keys or --create-config when initializing configuration")
-    sys.exit(127)
-  
   if args.questions:
     a.nodename = read_input("Node name", socket.gethostname())
     a.db_dbname = read_input("Database name", "baltrad")
     a.db_username = read_input("Database username", "baltrad")
     a.db_password = read_input("Database password", "baltrad")
     a.db_hostname = read_input("Database hostname", "localhost")
+
+  a.write_config_file(args.conf)  
+
+def get_current_user():
+  return pwd.getpwuid(os.getuid())[0]
+
+def execute_post_config(args):
+  a=propertyhandler.propertyhandler()
+  a.open_config_file(args.conf)
+
+  uid = pwd.getpwnam("root").pw_uid
 
   if args.create_keys:
     if not os.path.exists(args.keys_root):
@@ -149,16 +153,6 @@ def create_initial_config(args):
 
   a.keystore_jks = args.keystore_jks
   a.keystore_root = args.keys_root
-  
-  if args.create_config:
-    a.write_config_file(args.conf)  
-
-def get_current_user():
-  return pwd.getpwuid(os.getuid())[0]
-
-def execute_post_config(args):
-  a=propertyhandler.propertyhandler()
-  a.open_config_file(args.conf)
   
   a.write_bltnode_properties(args.bltnodefile)
   a.write_dex_properties(args.dexfile)
@@ -209,10 +203,6 @@ def run():
   parser_init = subparsers.add_parser('init', help='creates initial configuration')
   parser_setup = subparsers.add_parser('setup', help='runs the setup of a node')
 
-  #parser.add_argument("init", help="creates initial configuration")
-  
-  #parser.add_argument("setup", help="Uses the setup configuration file to configure the node")
-
   parser_init.add_argument(
     "--conf=", dest="conf", default="/etc/baltrad/localhost.properties", help="the name of the configuration file to be created"
   )
@@ -220,31 +210,7 @@ def run():
   parser_init.add_argument(
     "--questions", dest="questions", action="store_true", help="if a number of questions should be asked, otherwise default values will be set at most places",
   )
-  
-  parser_init.add_argument(
-    "--create-keys", dest="create_keys", action="store_true", help="if the keystore and keyzcar keys should be generated",
-  )
 
-  parser_init.add_argument(
-    "--create-config", dest="create_config", action="store_true", help="if the default configuration file should be created",
-  )
-
-  parser_init.add_argument(
-    "--keys-root=", dest="keys_root", default="/etc/baltrad/bltnode-keys", help="location of all keys used during exchange"
-  )
-    
-  parser_init.add_argument(
-    "--keystore=", dest="keystore_jks", default="/etc/baltrad/bltnode-keys/keystore.jks", help="location of the keystore"
-  )
-  
-  parser_init.add_argument(
-    "--user=", dest="baltrad_user", default="baltrad", help="name of user owning the keystore"
-  )
-  
-  parser_init.add_argument(
-    "--group=", dest="baltrad_group", default="baltrad", help="group name of user owning the keystore"
-  )
-  
   parser_setup.add_argument(
     "--conf=", dest="conf", default="/etc/baltrad/localhost.properties", help="the name of the configuration file to be read"
   )
@@ -279,6 +245,17 @@ def run():
 
   parser_setup.add_argument(
     "--upgrade-database", dest="update_database", action="store_true", help="if the database upgrade routines should be executed"
+  )
+  parser_setup.add_argument(
+    "--create-keys", dest="create_keys", action="store_true", help="if the keystore and keyzcar keys should be generated",
+  )
+
+  parser_setup.add_argument(
+    "--keys-root=", dest="keys_root", default="/etc/baltrad/bltnode-keys", help="location of all keys used during exchange"
+  )
+    
+  parser_setup.add_argument(
+    "--keystore=", dest="keystore_jks", default="/etc/baltrad/bltnode-keys/keystore.jks", help="location of the keystore"
   )
   
   parser_init.set_defaults(func=create_initial_config)
