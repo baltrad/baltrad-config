@@ -41,6 +41,21 @@ class propertyhandler(object):
     self.baltrad_framepublisher_min_poolsize = 1
     self.baltrad_framepublisher_max_poolsize = 5
     self.baltrad_framepublisher_queuesize = 100
+    
+    self.beast_admin_mailer_encoding = "UTF-8"
+    self.beast_admin_mailer_host = "localhost"
+    self.beast_admin_mailer_port = 25
+    self.beast_admin_mailer_username = ""
+    self.beast_admin_mailer_password = ""
+    self.beast_admin_mailer_from = ""
+    self.beast_admin_mailer_transport_protocol = "smtp"
+    self.beast_admin_mailer_smtp_auth = False
+    self.beast_admin_mailer_smtp_starttls_enable = False
+
+    self.beast_pooled_publisher_pool_core_size = 1
+    self.beast_pooled_publisher_pool_max_size = 5
+    self.beast_pooled_publisher_queue_size = 100
+          
     self.rave_ctpath = ""
     self.rave_pgfs = "4"
     self.rave_loglevel = "info"
@@ -103,7 +118,33 @@ class propertyhandler(object):
       self.baltrad_framepublisher_max_poolsize = int(properties["baltrad.framepublisher.max_poolsize"])
     if "baltrad.framepublisher.queuesize" in properties:
       self.baltrad_framepublisher_queuesize = int(properties["baltrad.framepublisher.queuesize"])
-    
+
+    if "beast.admin.mailer.encoding" in properties:
+      self.beast_admin_mailer_encoding = properties["beast.admin.mailer.encoding"]
+    if "beast.admin.mailer.host" in properties:
+      self.beast_admin_mailer_host = properties["beast.admin.mailer.host"]
+    if "beast.admin.mailer.port" in properties:
+      self.beast_admin_mailer_port = int(properties["beast.admin.mailer.port"])
+    if "beast.admin.mailer.username" in properties:
+      self.beast_admin_mailer_username = properties["beast.admin.mailer.username"]
+    if "beast.admin.mailer.password" in properties:
+      self.beast_admin_mailer_password = properties["beast.admin.mailer.password"]
+    if "beast.admin.mailer.from" in properties:
+      self.beast_admin_mailer_from = properties["beast.admin.mailer.from"]
+    if "beast.admin.mailer.transport.protocol" in properties:
+      self.beast_admin_mailer_transport_protocol = properties["beast.admin.mailer.transport.protocol"]
+    if "beast.admin.mailer.smtp.auth" in properties:
+      self.beast_admin_mailer_smtp_auth = properties["beast.admin.mailer.smtp.auth"] == "true"
+    if "beast.admin.mailer.smtp.starttls.enable" in properties:
+      self.beast_admin_mailer_smtp_starttls_enable = properties["beast.admin.mailer.smtp.starttls.enable"] == "true"
+
+    if "beast.pooled.publisher.pool.core.size" in properties:
+      self.beast_pooled_publisher_pool_core_size = int(properties["beast.pooled.publisher.pool.core.size"])
+    if "beast.pooled.publisher.pool.max.size" in properties:
+      self.beast_pooled_publisher_pool_max_size = int(properties["beast.pooled.publisher.pool.max.size"])
+    if "beast.pooled.publisher.queue.size" in properties:
+      self.beast_pooled_publisher_queue_size = int(properties["beast.pooled.publisher.queue.size"])
+
     if "rave.ctpath" in properties:
       self.rave_ctpath = properties["rave.ctpath"]
     if "rave.pgfs" in properties:
@@ -168,6 +209,22 @@ class propertyhandler(object):
     s += "baltrad.framepublisher.min_poolsize = %s\n"%self.baltrad_framepublisher_min_poolsize
     s += "baltrad.framepublisher.max_poolsize = %s\n"%self.baltrad_framepublisher_max_poolsize
     s += "baltrad.framepublisher.queuesize = %s\n"%self.baltrad_framepublisher_queuesize
+    s += "\n"
+    s += "#BEAST settings\n"
+    s += "beast.admin.mailer.encoding = %s\n"%self.beast_admin_mailer_encoding
+    s += "beast.admin.mailer.host = %s\n"%self.beast_admin_mailer_host
+    s += "beast.admin.mailer.port = %s\n"%self.beast_admin_mailer_port
+    s += "beast.admin.mailer.username = %s\n"%self.beast_admin_mailer_username
+    s += "beast.admin.mailer.password = %s\n"%self.beast_admin_mailer_password
+    s += "beast.admin.mailer.from = %s\n"%self.beast_admin_mailer_from
+    s += "beast.admin.mailer.transport.protocol = %s\n"%self.beast_admin_mailer_transport_protocol
+    s += "beast.admin.mailer.smtp.auth = %s\n"%("true" if self.beast_admin_mailer_smtp_auth else "false")
+    s += "beast.admin.mailer.smtp.starttls.enable = %s\n"%("true" if self.beast_admin_mailer_smtp_starttls_enable else "false")
+    s += "\n"
+    s += "#BEAST exchange pool settings\n"
+    s += "beast.pooled.publisher.pool.core.size = %d\n"%self.beast_pooled_publisher_pool_core_size
+    s += "beast.pooled.publisher.pool.max.size = %d\n"%self.beast_pooled_publisher_pool_max_size
+    s += "beast.pooled.publisher.queue.size = %d\n"%self.beast_pooled_publisher_queue_size
     s += "\n"
     s += "#rave.ctpath=%s\n"%self.rave_ctpath
     s += "rave.pgfs=%s\n"%self.rave_pgfs
@@ -271,6 +328,35 @@ class propertyhandler(object):
       
     fp.close()
     
+  ##
+  # Updates the dex.beast.properties file in the BaltradDex tomcat directory (baltrad.install.3p_root/....)
+  # @param properties: the properties to be used
+  #
+  def write_dex_beast_properties(self, dexbeastfile):
+    with open(dexbeastfile, "w") as fp:
+      fp.write("# Autogenerated by install script\n")
+      fp.write("# BEAST mailer specifics\n")
+      fp.write("beast.admin.mailer.encoding=%s\n"%self.beast_admin_mailer_encoding)
+      fp.write("beast.admin.mailer.host=%s\n"%self.beast_admin_mailer_host)
+      fp.write("beast.admin.mailer.port=%s\n"%self.beast_admin_mailer_port)
+      fp.write("beast.admin.mailer.username=%s\n"%self.beast_admin_mailer_username)
+      fp.write("beast.admin.mailer.password=%s\n"%self.beast_admin_mailer_password)
+      fp.write("beast.admin.mailer.from=%s\n"%self.beast_admin_mailer_from)
+      fp.write("beast.admin.mailer.transport.protocol=%s\n"%self.beast_admin_mailer_transport_protocol)
+      fp.write("beast.admin.mailer.smtp.auth=%s\n"%("true" if self.beast_admin_mailer_smtp_auth else "false"))
+      fp.write("beast.admin.mailer.smtp.starttls.enable=%s\n"%("true" if self.beast_admin_mailer_smtp_starttls_enable else "false"))
+
+      fp.write("\n")
+      fp.write("# BEAST mailer specifics\n")
+      fp.write("beast.admin.security.keyzcar.path=%s\n"%self.keystore_root)
+      fp.write("\n")
+      fp.write("# BEAST exchange pool settings\n")
+      fp.write("beast.pooled.publisher.pool.core.size=%d\n"%self.beast_pooled_publisher_pool_core_size)
+      fp.write("beast.pooled.publisher.pool.max.size=%d\n"%self.beast_pooled_publisher_pool_max_size)
+      fp.write("beast.pooled.publisher.queue.size=%d\n"%self.beast_pooled_publisher_queue_size)
+      
+    fp.close()
+        
   def update_rave_defines(self, ravedefinesfile, bltnodefile):
     fd = open(ravedefinesfile, "r")
     rows = fd.readlines()

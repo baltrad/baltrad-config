@@ -158,12 +158,14 @@ def execute_post_config(args):
   a.write_dex_properties(args.dexfile)
   a.write_dex_db_properties(args.dexdbfile)
   a.write_dex_fc_properties(args.dexfcfile)
+  a.write_dex_beast_properties(args.dexbeastfile)
   if not args.no_rave_config:
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
   os.chmod(args.bltnodefile, 0o660)
   os.chmod(args.dexfile, 0o660)
   os.chmod(args.dexdbfile, 0o660)
   os.chmod(args.dexfcfile, 0o660)
+  os.chmod(args.dexbeastfile, 0o660)
   
   # Change owner to root:baltrad
   uid = pwd.getpwnam("root").pw_uid
@@ -174,6 +176,7 @@ def execute_post_config(args):
     os.chown(args.dexfile, uid, baltrad_gid)
     os.chown(args.dexdbfile, uid, baltrad_gid)
     os.chown(args.dexfcfile, uid, baltrad_gid)
+    os.chown(args.dexbeastfile, uid, baltrad_gid)
     if not args.no_rave_config:
       os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
   else:
@@ -182,6 +185,7 @@ def execute_post_config(args):
     print("%s"%args.dexfile)
     print("%s"%args.dexdbfile)
     print("%s"%args.dexfcfile)
+    print("%s"%args.dexbeastfile)
     if not args.no_rave_config:
       print("%s"%args.ravedefinesfile)
   
@@ -229,6 +233,10 @@ def run():
 
   parser_setup.add_argument(
     "--dexfcfile=", dest="dexfcfile", default="/etc/baltrad/dex.fc.properties", help="Where the properties for dex fc should be written"
+  )
+
+  parser_setup.add_argument(
+    "--dexbeastfile=", dest="dexbeastfile", default="/etc/baltrad/dex.beast.properties", help="Where the properties for dex beast should be written"
   )
   
   parser_setup.add_argument(
