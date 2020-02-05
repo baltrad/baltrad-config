@@ -106,7 +106,10 @@ class propertyhandler(object):
     self.bdb_server_backend_sqla_pool_size = int(properties["baltrad.bdb.server.backend.sqla.pool_size"])
     self.bdb_server_log_level = properties["baltrad.bdb.server.log.level"]
     self.bdb_server_log_type = properties["baltrad.bdb.server.log.type"]
-    self.bdb_server_log_file = properties["baltrad.bdb.server.log.file"]
+    
+    if "baltrad.bdb.server.log.file" in properties:
+      self.bdb_server_log_file = properties["baltrad.bdb.server.log.file"]
+    
     self.bdb_server_log_id = properties["baltrad.bdb.server.log.id"]
     self.bdb_server_backend_sqla_storage_type = properties["baltrad.bdb.server.backend.sqla.storage.type"]
     self.bdb_server_backend_sqla_storage_fs_path = properties["baltrad.bdb.server.backend.sqla.storage.fs.path"]
@@ -162,6 +165,7 @@ class propertyhandler(object):
     self.post_config_scripts=[]
     while "baltrad.post.config.script.%d"%index in properties:
       self.post_config_scripts.append(properties["baltrad.post.config.script.%d"%index])
+      index++
 
   def __str__(self):
     s = "\n# General configuration settings\n"
