@@ -165,7 +165,7 @@ class propertyhandler(object):
     self.post_config_scripts=[]
     while "baltrad.post.config.script.%d"%index in properties:
       self.post_config_scripts.append(properties["baltrad.post.config.script.%d"%index])
-      index++
+      index = index + 1
 
   def __str__(self):
     s = "\n# General configuration settings\n"
