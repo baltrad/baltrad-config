@@ -196,8 +196,17 @@ def execute_post_config(args):
     if args.update_database:
       db.upgrade()
 
+  if args.run_scripts:
+    execute_post_config_scripts(a, args.conf)
+  
   #print(str(a))
-  #print("execute_post_config")
+  #print("execute_post_config")  
+
+def execute_post_config_scripts(ph, configfile):
+  for script in ph.post_config_scripts:
+    code = subprocess.call([sys.executable, script, configfile])
+    if code != 0:
+      print("Failed to run post script: %s"%script)
 
 def run():
   parser = create_argparse("Creates initial configuration for the baltrad node packages")
@@ -265,6 +274,9 @@ def run():
   parser_setup.add_argument(
     "--keystore=", dest="keystore_jks", default="/etc/baltrad/bltnode-keys/keystore.jks", help="location of the keystore"
   )
+  
+  parser_setup.add_argument(
+    "--runscripts", dest="run_scripts", action="store_true", help="if the scripts should be executed")
   
   parser_init.set_defaults(func=create_initial_config)
   parser_setup.set_defaults(func=execute_post_config)
