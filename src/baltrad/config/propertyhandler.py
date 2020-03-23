@@ -325,6 +325,8 @@ class propertyhandler(object):
       fp.write("database.uri=%s\n"%self.bdb_server_uri)
       fp.write("# File catalog data storage directory\n")
       fp.write("data.storage.folder=%s\n"%self.bdb_server_backend_sqla_storage_fs_path)
+      fp.write("# What type of strategy should be used for storage\n")
+      fp.write("data.storage.strategy=%s\n"%self.bdb_server_backend_sqla_storage_type)
       fp.write("# Keyczar key to communicate with node\n")
       fp.write("database.keyczar.key=%s/%s.priv\n"%(self.keystore_root, self.nodename))
       fp.write("# Name of the node\n")
