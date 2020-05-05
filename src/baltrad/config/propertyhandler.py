@@ -410,15 +410,15 @@ class propertyhandler(object):
     with open(tomcatserverfile) as fp:
       original = fp.read()
     if template != original:
-      backup_name="%s.%s"(tomcatserverfile, time.strftime("%Y%m%d%H%M%S"))
+      backup_name="%s.%s"%(tomcatserverfile, time.strftime("%Y%m%d%H%M%S"))
       shutil.copy(tomcatserverfile, backup_name)
       with open(tomcatserverfile, "w") as fp:
         fp.write(template)
-      print("Tomcat server.xml changed, diff is:")
+      print("WARNING! Tomcat server.xml has changed. Old file has been saved as %s"%backup_name)
       text1 = open(backup_name).readlines()
       text2 = open(tomcatserverfile).readlines()
       for line in difflib.unified_diff(text1, text2):
-        print(line)
+        print(line, end = '')
       
     
     

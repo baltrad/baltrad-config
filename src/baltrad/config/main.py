@@ -159,7 +159,7 @@ def execute_post_config(args):
   a.write_dex_db_properties(args.dexdbfile)
   a.write_dex_fc_properties(args.dexfcfile)
   a.write_dex_beast_properties(args.dexbeastfile)
-  a,write_tomcat_server_file(args.tomcatserverfile)
+  a.write_tomcat_server_file(args.tomcatserverfile)
   if not args.no_rave_config:
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
   os.chmod(args.bltnodefile, 0o660)
