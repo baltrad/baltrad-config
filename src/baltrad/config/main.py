@@ -50,8 +50,7 @@ def createdir(dir):
   elif not os.path.isdir(dir):
     raise Exception("%s exists but is not a directory"%dir)
     
-def create_keystore(keystore):
-  kpwd=None
+def create_keystore(keystore, kpwd=None, dname=None):
   while kpwd == None:
     kpwd=read_input("Keystore password: ")
     if len(kpwd) < 1:
@@ -59,9 +58,14 @@ def create_keystore(keystore):
       kpwd = None
 
   args = ["keytool", "-genkey", "-alias", "baltrad", "-keyalg", "RSA", "-validity", "3650", "-keypass", kpwd, "-storepass", kpwd, "-keystore", keystore]
+  if dname is not None:
+    args.append("-dname")
+    args.append(dname)
+    
   ocode = subprocess.call(args)
   if ocode != 0:
     raise Exception("keytool command failed for keystore creation")
+  return kpwd
 
 
 def keyczar_tool(*module_args):
@@ -108,51 +112,62 @@ def create_initial_config(args):
 
   a.write_config_file(args.conf)  
 
+def execute_createkeys(args):
+  a=propertyhandler.propertyhandler()
+  a.open_config_file(args.conf)
+  
+  if args.keys_root is not None:
+    a.keystore_root = args.keys_root
+  if args.keystore_jks is not None:
+    a.keystore_jks = args.keystore_jks
+  if not os.path.exists(a.keystore_root):
+    os.makedirs(a.keystore_root)
+    if get_current_user() == "root":
+      baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
+      baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
+      os.chown(a.keystore_root, baltrad_uid, baltrad_gid)
+
+  if os.path.exists(a.keystore_jks):
+    x = read_input("%s already exists, overwrite (y/n)?"%a.keystore_jks, "n")
+    if x=="y":
+      os.unlink(a.keystore_jks)
+
+  forced_storage = False
+  if not os.path.exists(a.keystore_jks):
+    a.keystore_pwd = create_keystore(a.keystore_jks, args.keystore_pwd, args.dname)
+    forced_storage = True
+
+  do_unlink_pub = False
+    
+  if os.path.exists("%s/%s.priv"%(a.keystore_root, a.nodename)):
+    x = read_input("%s/%s.priv already exists, overwrite (y/n)?"%(a.keystore_root, a.nodename))
+    if x=="y":
+      shutil.rmtree("%s/%s.priv"%(a.keystore_root, a.nodename), True)
+      do_unlink_pub = True
+
+  if os.path.exists("%s/%s.pub"%(a.keystore_root, a.nodename)):
+    if do_unlink_pub:
+      x="y"
+    else: 
+      x = read_input("%s/%s.pub already exists, overwrite (y/n)?"%(a.keystore_root, a.nodename))
+    if x=="y":
+      shutil.rmtree("%s/%s.pub"%(a.keystore_root, a.nodename), True)
+
+  create_priv_pub_keys(a.keystore_root, a.nodename)
+    
+  if args.keystore_jks is not None or args.keys_root is not None:
+    x = read_input("Specified keystore root and/or keystore file as argument. Update property file %s  (y/n)? "%args.conf)
+    if x == "y":
+      a.write_config_file(args.conf)
+  elif forced_storage:
+    a.write_config_file(args.conf)
+
 def get_current_user():
   return pwd.getpwuid(os.getuid())[0]
 
 def execute_post_config(args):
   a=propertyhandler.propertyhandler()
   a.open_config_file(args.conf)
-
-  uid = pwd.getpwnam("root").pw_uid
-
-  if args.create_keys:
-    if not os.path.exists(args.keys_root):
-      os.makedirs(args.keys_root)
-      if get_current_user() == "root":
-        baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
-        baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
-        os.chown(args.keys_root, baltrad_uid, baltrad_gid)
-
-    if os.path.exists(args.keystore_jks):
-      x = read_input("%s already exists, overwrite (y/n)?"%args.keystore_jks, "n")
-      if x=="y":
-        os.unlink(args.keystore_jks)
-
-    if not os.path.exists(args.keystore_jks):
-      create_keystore(args.keystore_jks)
-
-    do_unlink_pub = False
-    
-    if os.path.exists("%s/%s.priv"%(args.keys_root, a.nodename)):
-      x = read_input("%s/%s.priv already exists, overwrite (y/n)?"%(args.keys_root, a.nodename))
-      if x=="y":
-        shutil.rmtree("%s/%s.priv"%(args.keys_root, a.nodename), True)
-        do_unlink_pub = True
-
-    if os.path.exists("%s/%s.pub"%(args.keys_root, a.nodename)):
-      if do_unlink_pub:
-        x="y"
-      else: 
-        x = read_input("%s/%s.pub already exists, overwrite (y/n)?"%(args.keys_root, a.nodename))
-      if x=="y":
-        shutil.rmtree("%s/%s.pub"%(args.keys_root, a.nodename), True)
-
-    create_priv_pub_keys(args.keys_root, a.nodename)
-
-  a.keystore_jks = args.keystore_jks
-  a.keystore_root = args.keys_root
   
   a.write_bltnode_properties(args.bltnodefile)
   a.write_dex_properties(args.dexfile)
@@ -216,6 +231,7 @@ def run():
   subparsers = parser.add_subparsers(help='the allowed commands')
   
   parser_init = subparsers.add_parser('init', help='creates initial configuration')
+  parser_createkeys = subparsers.add_parser('create_keys', help='creates the key structure')
   parser_setup = subparsers.add_parser('setup', help='runs the setup of a node')
 
   parser_init.add_argument(
@@ -269,23 +285,33 @@ def run():
   parser_setup.add_argument(
     "--upgrade-database", dest="update_database", action="store_true", help="if the database upgrade routines should be executed"
   )
-  parser_setup.add_argument(
-    "--create-keys", dest="create_keys", action="store_true", help="if the keystore and keyzcar keys should be generated",
-  )
-
-  parser_setup.add_argument(
-    "--keys-root=", dest="keys_root", default="/etc/baltrad/bltnode-keys", help="location of all keys used during exchange"
-  )
-    
-  parser_setup.add_argument(
-    "--keystore=", dest="keystore_jks", default="/etc/baltrad/bltnode-keys/keystore.jks", help="location of the keystore"
-  )
   
   parser_setup.add_argument(
     "--runscripts", dest="run_scripts", action="store_true", help="if the scripts should be executed")
   
+  
+  parser_createkeys.add_argument(
+    "--conf=", dest="conf", default="/etc/baltrad/localhost.properties", help="the name of the configuration file to be created"
+  )
+  
+  parser_createkeys.add_argument(
+    "--keys-root=", dest="keys_root", default=None, help="location of all keys used during exchange"
+  )
+    
+  parser_createkeys.add_argument(
+    "--keystore=", dest="keystore_jks", default=None, help="location of the keystore"
+  )
+
+  parser_createkeys.add_argument(
+    "--password=", dest="keystore_pwd", default=None, help="password for the keystore"
+  )
+  
+  parser_createkeys.add_argument(
+    "--dname=", dest="dname", default=None, help="Distinguished name for the keystore")
+  
   parser_init.set_defaults(func=create_initial_config)
   parser_setup.set_defaults(func=execute_post_config)
+  parser_createkeys.set_defaults(func=execute_createkeys)
   
   args = parser.parse_args()
   
