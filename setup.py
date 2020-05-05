@@ -25,6 +25,8 @@ setuptools.setup(name="baltrad.config",
     package_dir={
         "": "src"
     },
+    package_data={'': ['server.xml.template']},
+    include_package_data=True,
     install_requires=REQUIRED_PACKAGES,
     entry_points = {
         "console_scripts" : [

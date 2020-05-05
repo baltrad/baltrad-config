@@ -4,6 +4,8 @@ import tempfile
 import re
 import os
 import shutil
+import time
+import difflib
 
 class propertyhandler(object):
   def __init__(self):
@@ -18,6 +20,7 @@ class propertyhandler(object):
     self.nodeaddress="http://127.0.0.1:8080"
     self.keystore_root="/etc/baltrad/bltnode-keys"
     self.keystore_jks="%s/keystore.jks"%self.keystore_root
+    self.keystore_pwd="secret"
     self.with_rave = True
     self.dex_uri = "http://localhost:8080/BaltradDex"
     self.prepare_threshold = -1
@@ -90,6 +93,8 @@ class propertyhandler(object):
     self.nodeaddress = properties["baltrad.node.address"]
     self.keystore_root = properties["baltrad.keyczar.root"]
     self.keystore_jks = properties["baltrad.keystore.jks"]
+    if "baltrad.keystore.password" in properties:
+      self.keystore_pwd = properties["baltrad.keystore.password"]
     self.dex_uri = properties["baltrad.dex.uri"]
     self.prepare_threshold = int(properties["baltrad.db.jdbc.prepare_threshold"])
 
@@ -186,6 +191,7 @@ class propertyhandler(object):
     s += "baltrad.node.address = %s\n"%self.nodeaddress
     s += "baltrad.keyczar.root = %s\n"%self.keystore_root
     s += "baltrad.keystore.jks = %s\n"%self.keystore_jks
+    s += "baltrad.keystore.password = %s\n"%self.keystore_pwd
     s += "baltrad.dex.uri = %s\n"%self.dex_uri
     s += "baltrad.db.jdbc.prepare_threshold = %d\n"%self.prepare_threshold
     s += "\n# dex & beast database script locations\n"
@@ -394,3 +400,25 @@ class propertyhandler(object):
     for row in nrows:
       fp.write(row)
     fp.close()
+    
+  def write_tomcat_server_file(self, tomcatserverfile):
+    server_template_file = os.path.join(os.path.dirname(__file__),"server.xml.template")
+    with open(server_template_file, "r") as fp:
+      template = fp.read()
+    template = template.replace("${baltrad.keystore.file}", self.keystore_jks)
+    template = template.replace("${baltrad.keystore.password}", self.keystore_pwd)
+    with open(tomcatserverfile) as fp:
+      original = fp.read()
+    if template != original:
+      backup_name="%s.%s"(tomcatserverfile, time.strftime("%Y%m%d%H%M%S"))
+      shutil.copy(tomcatserverfile, backup_name)
+      with open(tomcatserverfile, "w") as fp:
+        fp.write(template)
+      print("Tomcat server.xml changed, diff is:")
+      text1 = open(backup_name).readlines()
+      text2 = open(tomcatserverfile).readlines()
+      for line in difflib.unified_diff(text1, text2):
+        print(line)
+      
+    
+    

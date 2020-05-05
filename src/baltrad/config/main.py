@@ -159,6 +159,7 @@ def execute_post_config(args):
   a.write_dex_db_properties(args.dexdbfile)
   a.write_dex_fc_properties(args.dexfcfile)
   a.write_dex_beast_properties(args.dexbeastfile)
+  a,write_tomcat_server_file(args.tomcatserverfile)
   if not args.no_rave_config:
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
   os.chmod(args.bltnodefile, 0o660)
@@ -166,6 +167,7 @@ def execute_post_config(args):
   os.chmod(args.dexdbfile, 0o660)
   os.chmod(args.dexfcfile, 0o660)
   os.chmod(args.dexbeastfile, 0o660)
+  os.chmod(args.tomcatserverfile, 0o660)
   
   # Change owner to root:baltrad
   uid = pwd.getpwnam("root").pw_uid
@@ -177,6 +179,8 @@ def execute_post_config(args):
     os.chown(args.dexdbfile, uid, baltrad_gid)
     os.chown(args.dexfcfile, uid, baltrad_gid)
     os.chown(args.dexbeastfile, uid, baltrad_gid)
+    os.chown(args.tomcatserverfile, uid, baltrad_gid)
+    
     if not args.no_rave_config:
       os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
   else:
@@ -186,6 +190,7 @@ def execute_post_config(args):
     print("%s"%args.dexdbfile)
     print("%s"%args.dexfcfile)
     print("%s"%args.dexbeastfile)
+    print("%s"%args.tomcatserverfile)
     if not args.no_rave_config:
       print("%s"%args.ravedefinesfile)
   
@@ -199,9 +204,6 @@ def execute_post_config(args):
   if args.run_scripts:
     execute_post_config_scripts(a, args.conf)
   
-  #print(str(a))
-  #print("execute_post_config")  
-
 def execute_post_config_scripts(ph, configfile):
   for script in ph.post_config_scripts:
     code = subprocess.call([sys.executable, script, configfile])
@@ -250,6 +252,10 @@ def run():
   
   parser_setup.add_argument(
     "--ravedefinesfile=", dest="ravedefinesfile", default="/etc/baltrad/rave/Lib/rave_defines.py", help="Where rave_defines.py is located"
+  )
+  
+  parser_setup.add_argument(
+    "--tomcatserverfile=", dest="tomcatserverfile", default="/etc/baltrad/baltrad-node-tomcat/server.xml", help="Where the tomcat server.xml file is located"
   )
   
   parser_setup.add_argument(
