@@ -165,6 +165,12 @@ def execute_createkeys(args):
 def get_current_user():
   return pwd.getpwuid(os.getuid())[0]
 
+def change_mod(fname, mod):
+  f_uid = os.stat(fname).st_uid
+  c_uid = os.getuid()
+  if c_uid == 0 or f_uid == c_uid:
+    os.chown(fname, mod)
+
 def execute_post_config(args):
   a=propertyhandler.propertyhandler()
   a.open_config_file(args.conf)
@@ -177,24 +183,18 @@ def execute_post_config(args):
   a.write_tomcat_server_file(args.tomcatserverfile)
   if not args.no_rave_config:
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
-  os.chmod(args.bltnodefile, 0o660)
-  os.chmod(args.dexfile, 0o660)
-  os.chmod(args.dexdbfile, 0o660)
-  os.chmod(args.dexfcfile, 0o660)
-  os.chmod(args.dexbeastfile, 0o660)
-  os.chmod(args.tomcatserverfile, 0o660)
   
   # Change owner to root:baltrad
   uid = pwd.getpwnam("root").pw_uid
   baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
   baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
   if get_current_user() == "root":
-    os.chown(args.bltnodefile, uid, baltrad_gid)
-    os.chown(args.dexfile, uid, baltrad_gid)
-    os.chown(args.dexdbfile, uid, baltrad_gid)
-    os.chown(args.dexfcfile, uid, baltrad_gid)
-    os.chown(args.dexbeastfile, uid, baltrad_gid)
-    os.chown(args.tomcatserverfile, uid, baltrad_gid)
+    os.chown(args.bltnodefile, baltrad_uid, baltrad_gid)
+    os.chown(args.dexfile, baltrad_uid, baltrad_gid)
+    os.chown(args.dexdbfile, baltrad_uid, baltrad_gid)
+    os.chown(args.dexfcfile, baltrad_uid, baltrad_gid)
+    os.chown(args.dexbeastfile, baltrad_uid, baltrad_gid)
+    os.chown(args.tomcatserverfile, baltrad_uid, baltrad_gid)
     
     if not args.no_rave_config:
       os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
@@ -208,6 +208,16 @@ def execute_post_config(args):
     print("%s"%args.tomcatserverfile)
     if not args.no_rave_config:
       print("%s"%args.ravedefinesfile)
+
+  os.chmod(args.bltnodefile, 0o660)
+  os.chmod(args.dexfile, 0o660)
+  os.chmod(args.dexdbfile, 0o660)
+  os.chmod(args.dexfcfile, 0o660)
+  os.chmod(args.dexbeastfile, 0o660)
+  os.chmod(args.tomcatserverfile, 0o660)
+
+  if not args.no_rave_config:
+    os.chmod(args.ravedefinesfile, 0o660)
   
   if args.install_database or args.update_database:
     db = database.baltrad_database(args.bltnodefile, a.db_hostname, a.db_dbname, a.db_username, a.db_password, a.bdb_binaries, a.beast_sql_file_dir, a.dex_sql_file_dir)
