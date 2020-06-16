@@ -21,6 +21,14 @@ class propertyhandler(object):
     self.keystore_root="/etc/baltrad/bltnode-keys"
     self.keystore_jks="%s/keystore.jks"%self.keystore_root
     self.keystore_pwd="secret"
+
+    self.ajp_connector_enabled=False
+    self.ajp_connector_secret_required=False
+    self.ajp_connector_secret=""
+    self.ajp_connector_address="::1"
+    self.ajp_connector_port=8009
+    self.ajp_connector_redirectPort=8443
+    
     self.with_rave = True
     self.dex_uri = "http://localhost:8080/BaltradDex"
     self.prepare_threshold = -1
@@ -76,6 +84,12 @@ class propertyhandler(object):
       fp.write(str(self))
     os.chmod(config_file,0o600)
 
+  def str_to_bool(self, s):
+    if s is not None:
+      if s.lower() in ["true", "1", "yes", "y", "t"]:
+        return True
+    return False 
+
   def open_config_file(self, config_file):
     properties = self._load_properties(config_file)
     self.with_rave = properties["baltrad.with.rave"] == "true"
@@ -95,6 +109,25 @@ class propertyhandler(object):
     self.keystore_jks = properties["baltrad.keystore.jks"]
     if "baltrad.keystore.password" in properties:
       self.keystore_pwd = properties["baltrad.keystore.password"]
+
+    if "baltrad.ajp.connector.enabled" in properties:
+      self.ajp_connector_enabled = self.str_to_bool(properties["baltrad.ajp.connector.enabled"])
+
+    if "baltrad.ajp.connector.secret_required" in properties:
+      self.ajp_connector_secret_required = self.str_to_bool(properties["baltrad.ajp.connector.secret_required"])
+      
+    if "baltrad.ajp.connector.secret" in properties:
+      self.ajp_connector_secret = properties["baltrad.ajp.connector.secret"]
+    
+    if "baltrad.ajp.connector.address" in properties:
+      self.ajp_connector_address = properties["baltrad.ajp.connector.address"]
+
+    if "baltrad.ajp.connector.port" in properties:
+      self.ajp_connector_port = int(properties["baltrad.ajp.connector.port"])
+
+    if "baltrad.ajp.connector.redirect_port" in properties:
+      self.ajp_connector_redirectPort = int(properties["baltrad.ajp.connector.redirect_port"])
+    
     self.dex_uri = properties["baltrad.dex.uri"]
     self.prepare_threshold = int(properties["baltrad.db.jdbc.prepare_threshold"])
 
@@ -192,6 +225,14 @@ class propertyhandler(object):
     s += "baltrad.keyczar.root = %s\n"%self.keystore_root
     s += "baltrad.keystore.jks = %s\n"%self.keystore_jks
     s += "baltrad.keystore.password = %s\n"%self.keystore_pwd
+    
+    s += "baltrad.ajp.connector.enabled = %s\n"%str(self.ajp_connector_enabled).lower()
+    s += "baltrad.ajp.connector.secret_required = %s\n"%str(self.ajp_connector_secret_required).lower()
+    s += "baltrad.ajp.connector.secret = %s\n"%self.ajp_connector_secret
+    s += "baltrad.ajp.connector.address = %s\n"%self.ajp_connector_address
+    s += "baltrad.ajp.connector.port = %d\n"%self.ajp_connector_port
+    s += "baltrad.ajp.connector.redirect_port = %d\n"%self.ajp_connector_redirectPort
+
     s += "baltrad.dex.uri = %s\n"%self.dex_uri
     s += "baltrad.db.jdbc.prepare_threshold = %d\n"%self.prepare_threshold
     s += "\n# dex & beast database script locations\n"
@@ -407,6 +448,20 @@ class propertyhandler(object):
       template = fp.read()
     template = template.replace("${baltrad.keystore.file}", self.keystore_jks)
     template = template.replace("${baltrad.keystore.password}", self.keystore_pwd)
+    ajpconnector=""
+    if self.ajp_connector_enabled:
+      ajpconnector = ajpconnector + "    <Connector port=\"%d\"\n"%self.ajp_connector_port
+      ajpconnector = ajpconnector + "               protocol=\"AJP/1.3\"\n"
+      ajpconnector = ajpconnector + "               redirectPort=\"%d\"\n"%self.ajp_connector_redirectPort
+      if self.ajp_connector_address:
+        ajpconnector = ajpconnector + "               address=\"%s\"\n"%self.ajp_connector_address
+      if self.ajp_connector_secret_required:
+        ajpconnector = ajpconnector + "               secretRequired=\"true\"\n"
+        ajpconnector = ajpconnector + "               secret=\"%s\" />\n"%self.ajp_connector_secret
+      else:
+        ajpconnector = ajpconnector + "               secretRequired=\"false\" />\n"
+    template = template.replace("${baltrad.ajpconnector}", ajpconnector)
+
     with open(tomcatserverfile) as fp:
       original = fp.read()
     if template != original:
