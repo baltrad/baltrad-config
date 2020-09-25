@@ -199,8 +199,8 @@ class propertyhandler(object):
       self.rave_centerid = properties["rave.centerid"]
     if "rave.qitotalmethod" in properties:
       self.rave_qitotalmethod = properties["rave.qitotalmethod"]
-    if "rave.scansun.out.path" in properties:
-      self.rave_scansun_out_path = properties["rave.scansun.out.path"]
+    if "rave.scansunout" in properties:
+      self.rave_scansun_out_path = properties["rave.scansunout"]
 
     index = 1
     self.post_config_scripts=[]
@@ -287,9 +287,9 @@ class propertyhandler(object):
     s += "rave.centerid=%s\n"%self.rave_centerid
     s += "rave.qitotalmethod=%s\n"%self.rave_qitotalmethod
     if not self.rave_scansun_out_path:
-      s += "rave.scansun.out.path=\n"
+      s += "rave.scansunout=\n"
     else:
-      s += "rave.scansun.out.path=%s\n"%self.rave_scansun_out_path    
+      s += "rave.scansunout=%s\n"%self.rave_scansun_out_path    
     
     s += "\n\n"
     s += "# Additional post config scripts.\n"
