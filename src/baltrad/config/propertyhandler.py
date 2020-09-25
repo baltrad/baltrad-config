@@ -74,6 +74,7 @@ class propertyhandler(object):
     self.rave_centerid="ORG:82"
     self.rave_qitotalmethod="minimum"
     self.post_config_scripts = []
+    self.rave_scansun_out_path = ""
     
   def _load_properties(self, cfile):
     with open(cfile, "r") as fp:
@@ -198,7 +199,9 @@ class propertyhandler(object):
       self.rave_centerid = properties["rave.centerid"]
     if "rave.qitotalmethod" in properties:
       self.rave_qitotalmethod = properties["rave.qitotalmethod"]
-    
+    if "rave.scansun.out.path" in properties:
+      self.rave_scansun_out_path = properties["rave.scansun.out.path"]
+
     index = 1
     self.post_config_scripts=[]
     while "baltrad.post.config.script.%d"%index in properties:
@@ -283,6 +286,10 @@ class propertyhandler(object):
     s += "rave.logid=%s\n"%self.rave_logid
     s += "rave.centerid=%s\n"%self.rave_centerid
     s += "rave.qitotalmethod=%s\n"%self.rave_qitotalmethod
+    if not self.rave_scansun_out_path:
+      s += "rave.scansun.out.path=\n"
+    else:
+      s += "rave.scansun.out.path=%s\n"%self.rave_scansun_out_path    
     
     s += "\n\n"
     s += "# Additional post config scripts.\n"
@@ -436,6 +443,12 @@ class propertyhandler(object):
         row = "CENTER_ID = \"%s\"\n"%self.rave_centerid
       elif row.startswith("QITOTAL_METHOD") and self.rave_qitotalmethod is not None:
         row = "QITOTAL_METHOD = \"%s\"\n"%self.rave_qitotalmethod
+      elif row.startswith("RAVESCANSUN_OUT"):
+        if not self.rave_scansun_out_path:
+          row = "RAVESCANSUN_OUT = None\n"
+        else:
+          row = "RAVESCANSUN_OUT = \"%s\"\n"%self.rave_scansun_out_path
+        
       nrows.append(row)
     fp = open(ravedefinesfile, "w")
     for row in nrows:
