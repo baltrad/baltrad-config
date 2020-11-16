@@ -181,6 +181,7 @@ def execute_post_config(args):
   a.write_dex_fc_properties(args.dexfcfile)
   a.write_dex_beast_properties(args.dexbeastfile)
   a.write_tomcat_server_file(args.tomcatserverfile)
+  a.update_application_context(args.appcontextfile)
   if not args.no_rave_config:
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
   
@@ -195,9 +196,11 @@ def execute_post_config(args):
     os.chown(args.dexfcfile, baltrad_uid, baltrad_gid)
     os.chown(args.dexbeastfile, baltrad_uid, baltrad_gid)
     os.chown(args.tomcatserverfile, baltrad_uid, baltrad_gid)
+    os.chown(args.appcontextfile, baltrad_uid, baltrad_gid)
     
     if not args.no_rave_config:
       os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
+
   else:
     print("WARNING! Could not change ownership of configuration files:")
     print("%s"%args.bltnodefile)
@@ -206,6 +209,7 @@ def execute_post_config(args):
     print("%s"%args.dexfcfile)
     print("%s"%args.dexbeastfile)
     print("%s"%args.tomcatserverfile)
+    print("%s"%args.appcontextfile)
     if not args.no_rave_config:
       print("%s"%args.ravedefinesfile)
 
@@ -215,6 +219,7 @@ def execute_post_config(args):
   os.chmod(args.dexfcfile, 0o660)
   os.chmod(args.dexbeastfile, 0o660)
   os.chmod(args.tomcatserverfile, 0o660)
+  os.chmod(args.appcontextfile, 0o660)
 
   if not args.no_rave_config:
     os.chmod(args.ravedefinesfile, 0o660)
@@ -282,6 +287,10 @@ def run():
   
   parser_setup.add_argument(
     "--tomcatserverfile=", dest="tomcatserverfile", default="/etc/baltrad/baltrad-node-tomcat/server.xml", help="Where the tomcat server.xml file is located"
+  )
+  
+  parser_setup.add_argument(
+    "--appcontextfile=", dest="appcontextfile", default="/var/lib/baltrad/baltrad-node-tomcat/webapps/BaltradDex/WEB-INF/applicationContext.xml", help="Where the application context file is located"
   )
   
   parser_setup.add_argument(

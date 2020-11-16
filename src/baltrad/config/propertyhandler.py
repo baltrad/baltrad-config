@@ -29,6 +29,8 @@ class propertyhandler(object):
     self.ajp_connector_port=8009
     self.ajp_connector_redirectPort=8443
     
+    self.extra_fwd_port=""
+    
     self.with_rave = True
     self.dex_uri = "http://localhost:8080/BaltradDex"
     self.prepare_threshold = -1
@@ -128,6 +130,9 @@ class propertyhandler(object):
 
     if "baltrad.ajp.connector.redirect_port" in properties:
       self.ajp_connector_redirectPort = int(properties["baltrad.ajp.connector.redirect_port"])
+    
+    if "baltrad.extra.fwd.port" in properties:
+      self.extra_fwd_port = properties["baltrad.extra.fwd.port"]
     
     self.dex_uri = properties["baltrad.dex.uri"]
     self.prepare_threshold = int(properties["baltrad.db.jdbc.prepare_threshold"])
@@ -235,6 +240,12 @@ class propertyhandler(object):
     s += "baltrad.ajp.connector.address = %s\n"%self.ajp_connector_address
     s += "baltrad.ajp.connector.port = %d\n"%self.ajp_connector_port
     s += "baltrad.ajp.connector.redirect_port = %d\n"%self.ajp_connector_redirectPort
+
+    s += "\n"
+    s += "# If there is some sort of forwarding to the node which remaps for example port 80 to 8080 and 443 to 8443.\n"
+    s += "# Then add, from-port and to port like baltrad.extra.fwd.port=80,443\n"
+    s += "baltrad.extra.fwd.port=%s\n"%self.extra_fwd_port
+    s += "\n"
 
     s += "baltrad.dex.uri = %s\n"%self.dex_uri
     s += "baltrad.db.jdbc.prepare_threshold = %d\n"%self.prepare_threshold
@@ -487,6 +498,33 @@ class propertyhandler(object):
       text2 = open(tomcatserverfile).readlines()
       for line in difflib.unified_diff(text1, text2):
         print(line, end = '')
-      
+
+  def update_application_context(self, appcontextfile):
+    STARTTAG="<security:port-mappings>"
+    ENDTAG="</security:port-mappings>"
+    newrows = []
+    with open(appcontextfile, "r") as fp:
+      rows = fp.readlines()
     
-    
+    ignore_lines=False
+    for row in rows:
+      if row.find(STARTTAG) >= 0:
+        newrows.append("        " + STARTTAG + "\n")
+        newrows.append("           <security:port-mapping http=\"8080\" https=\"8443\"/>\n")
+        if self.extra_fwd_port:
+          p=self.extra_fwd_port.split(",")
+          p1=int(p[0])
+          p2=int(p[1])
+          newrows.append("           <security:port-mapping http=\"%d\" https=\"%d\"/>\n"%(p1,p2))
+        ignore_lines=True
+      elif row.find(ENDTAG) >= 0:
+        newrows.append("        " + ENDTAG + "\n")
+        ignore_lines=False
+      elif ignore_lines:
+        pass
+      else:
+        newrows.append(row)
+        
+    with open(appcontextfile, "w") as fp:
+      for row in newrows:
+        fp.write(row)
