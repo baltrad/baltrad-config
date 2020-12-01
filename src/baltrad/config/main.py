@@ -184,7 +184,7 @@ def execute_post_config(args):
   a.update_application_context(args.appcontextfile)
   if not args.no_rave_config:
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
-  
+
   # Change owner to root:baltrad
   uid = pwd.getpwnam("root").pw_uid
   baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid

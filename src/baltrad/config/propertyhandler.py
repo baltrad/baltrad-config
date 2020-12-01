@@ -75,8 +75,11 @@ class propertyhandler(object):
     self.rave_logid = "'PGF[rave.%s]'"%self.nodename
     self.rave_centerid="ORG:82"
     self.rave_qitotalmethod="minimum"
-    self.post_config_scripts = []
     self.rave_scansun_out_path = ""
+    self.rave_pgf_compositing_use_lazy_loading = False
+    self.rave_pgf_compositing_use_lazy_loading_preloads = False
+    
+    self.post_config_scripts = []
     
   def _load_properties(self, cfile):
     with open(cfile, "r") as fp:
@@ -206,6 +209,11 @@ class propertyhandler(object):
       self.rave_qitotalmethod = properties["rave.qitotalmethod"]
     if "rave.scansunout" in properties:
       self.rave_scansun_out_path = properties["rave.scansunout"]
+    if "rave.pgf.compositing.use_lazy_loading" in properties:
+      self.rave_pgf_compositing_use_lazy_loading = properties["rave.pgf.compositing.use_lazy_loading"]
+    if "rave.pgf.compositing.use_lazy_loading_preloads" in properties:
+      self.rave_pgf_compositing_use_lazy_loading_preloads = properties["rave.pgf.compositing.use_lazy_loading_preloads"]
+
 
     index = 1
     self.post_config_scripts=[]
@@ -300,7 +308,9 @@ class propertyhandler(object):
     if not self.rave_scansun_out_path:
       s += "rave.scansunout=\n"
     else:
-      s += "rave.scansunout=%s\n"%self.rave_scansun_out_path    
+      s += "rave.scansunout=%s\n"%self.rave_scansun_out_path
+    s += "rave.pgf.compositing.use_lazy_loading=%s\n"%self.rave_pgf_compositing_use_lazy_loading
+    s += "rave.pgf.compositing.use_lazy_loading_preloads=%s\n"%self.rave_pgf_compositing_use_lazy_loading_preloads
     
     s += "\n\n"
     s += "# Additional post config scripts.\n"
@@ -459,6 +469,10 @@ class propertyhandler(object):
           row = "RAVESCANSUN_OUT = None\n"
         else:
           row = "RAVESCANSUN_OUT = \"%s\"\n"%self.rave_scansun_out_path
+      elif row.startswith("RAVE_PGF_COMPOSITING_USE_LAZY_LOADING_PRELOADS"):
+        row = "RAVE_PGF_COMPOSITING_USE_LAZY_LOADING_PRELOADS=%s\n"%str(self.rave_pgf_compositing_use_lazy_loading_preloads)
+      elif row.startswith("RAVE_PGF_COMPOSITING_USE_LAZY_LOADING"):
+        row = "RAVE_PGF_COMPOSITING_USE_LAZY_LOADING=%s\n"%str(self.rave_pgf_compositing_use_lazy_loading)
         
       nrows.append(row)
     fp = open(ravedefinesfile, "w")
