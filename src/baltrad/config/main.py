@@ -222,7 +222,7 @@ def execute_post_config(args):
   os.chmod(args.appcontextfile, 0o660)
 
   if not args.no_rave_config:
-    os.chmod(args.ravedefinesfile, 0o660)
+    os.chmod(args.ravedefinesfile, 0o664)
   
   if args.install_database or args.update_database:
     db = database.baltrad_database(args.bltnodefile, a.db_hostname, a.db_dbname, a.db_username, a.db_password, a.bdb_binaries, a.beast_sql_file_dir, a.dex_sql_file_dir)
