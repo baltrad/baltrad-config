@@ -489,7 +489,7 @@ class propertyhandler(object):
       fp.write("beast.pooled.publisher.queue.size=%d\n"%self.beast_pooled_publisher_queue_size)
       fp.write("\n")
       
-      fp.write(" #BEAST message manager settings\n")
+      fp.write("#BEAST message manager settings\n")
       fp.write("beast.manager.number.executors = %d\n"%self.beast_manager_number_executors)
 
     fp.close()
