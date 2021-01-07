@@ -16,6 +16,8 @@ class propertyhandler(object):
     self.db_password="baltrad"
     self.db_hostname="localhost"
     self.db_dbname="baltrad"
+    self.db_pool_size=10
+
     self.nodename=socket.gethostname()
     self.nodeaddress="http://127.0.0.1:8080"
     self.keystore_root="/etc/baltrad/bltnode-keys"
@@ -72,7 +74,9 @@ class propertyhandler(object):
     self.beast_pooled_publisher_pool_core_size = 1
     self.beast_pooled_publisher_pool_max_size = 5
     self.beast_pooled_publisher_queue_size = 100
-          
+
+    self.beast_manager_number_executors = 10
+
     self.rave_ctpath = ""
     self.rave_pgfs = "4"
     self.rave_loglevel = "info"
@@ -112,7 +116,9 @@ class propertyhandler(object):
     self.db_password = properties["baltrad.db.password"]
     self.db_hostname = properties["baltrad.db.hostname"]
     self.db_dbname = properties["baltrad.db.dbname"]
-    
+    if "baltrad.db.pool.size" in properties:
+      self.db_pool_size = int(properties["baltrad.db.pool.size"])
+
     self.nodename = properties["baltrad.node.name"]
     self.nodeaddress = properties["baltrad.node.address"]
     self.keystore_root = properties["baltrad.keyczar.root"]
@@ -209,6 +215,9 @@ class propertyhandler(object):
     if "beast.pooled.publisher.queue.size" in properties:
       self.beast_pooled_publisher_queue_size = int(properties["beast.pooled.publisher.queue.size"])
 
+    if "beast.manager.number.executors" in properties:
+      self.beast_manager_number_executors = int(properties["beast.manager.number.executors"])
+
     if "rave.ctpath" in properties:
       self.rave_ctpath = properties["rave.ctpath"]
     if "rave.pgfs" in properties:
@@ -249,6 +258,7 @@ class propertyhandler(object):
     s += "baltrad.db.password = %s\n"%self.db_password
     s += "baltrad.db.hostname = %s\n"%self.db_hostname
     s += "baltrad.db.dbname = %s\n"%self.db_dbname
+    s += "baltrad.db.pool.size = %d\n"%self.db_pool_size
     s += "\n"
     s += "baltrad.node.name = %s\n"%self.nodename
     s += "baltrad.node.address = %s\n"%self.nodeaddress
@@ -319,6 +329,9 @@ class propertyhandler(object):
     s += "beast.pooled.publisher.pool.max.size = %d\n"%self.beast_pooled_publisher_pool_max_size
     s += "beast.pooled.publisher.queue.size = %d\n"%self.beast_pooled_publisher_queue_size
     s += "\n"
+    s += "#BEAST message manager settings\n"
+    s += "beast.manager.number.executors = %d\n"%self.beast_manager_number_executors
+    s += "\n"
     s += "#rave.ctpath=%s\n"%self.rave_ctpath
     s += "rave.pgfs=%s\n"%self.rave_pgfs
     s += "rave.loglevel=%s\n"%self.rave_loglevel
@@ -361,7 +374,7 @@ class propertyhandler(object):
       fp.write("baltrad.bdb.server.log.id = %s\n"%self.bdb_server_log_id)
       fp.write("baltrad.bdb.server.backend.sqla.storage.type = %s\n"%self.bdb_server_backend_sqla_storage_type)
       fp.write("baltrad.bdb.server.backend.sqla.storage.fs.path = %s\n"%self.bdb_server_backend_sqla_storage_fs_path)
-      fp.write("baltrad.bdb.server.backend.sqla.storage.fs.layers = 3\n")
+      fp.write("baltrad.bdb.server.backend.sqla.storage.fs.layers = %d\n"%self.bdb_server_backend_fs_layers)
       fp.write("baltrad.bdb.server.auth.providers = %s\n"%self.bdb_server_auth_providers)
 
       fp.write("baltrad.bdb.server.auth.keyczar.keystore_root = %s\n"%self.keystore_root)
@@ -408,6 +421,8 @@ class propertyhandler(object):
         fp.write("db.url=jdbc:postgresql://%s/%s?prepareThreshold=%i\n"%(self.db_hostname,self.db_dbname,self.prepare_threshold))
       fp.write("db.user=%s\n"%self.db_username)
       fp.write("db.pwd=%s\n"%self.db_password)
+      fp.write("db.pool.size=%d\n"%self.db_pool_size)
+
     fp.close()
 
   ##
@@ -472,7 +487,11 @@ class propertyhandler(object):
       fp.write("beast.pooled.publisher.pool.core.size=%d\n"%self.beast_pooled_publisher_pool_core_size)
       fp.write("beast.pooled.publisher.pool.max.size=%d\n"%self.beast_pooled_publisher_pool_max_size)
       fp.write("beast.pooled.publisher.queue.size=%d\n"%self.beast_pooled_publisher_queue_size)
+      fp.write("\n")
       
+      fp.write(" #BEAST message manager settings\n")
+      fp.write("beast.manager.number.executors = %d\n"%self.beast_manager_number_executors)
+
     fp.close()
         
   def update_rave_defines(self, ravedefinesfile, bltnodefile):
