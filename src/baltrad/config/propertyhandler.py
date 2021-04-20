@@ -91,7 +91,7 @@ class propertyhandler(object):
     self.beast_admin_mailer_smtp_auth = False
     self.beast_admin_mailer_smtp_starttls_enable = False
 
-    self.beast_cli_administration_enabled = false
+    self.beast_cli_administration_enabled = False
 
     self.beast_pooled_publisher_pool_core_size = 1
     self.beast_pooled_publisher_pool_max_size = 5
