@@ -91,6 +91,8 @@ class propertyhandler(object):
     self.beast_admin_mailer_smtp_auth = False
     self.beast_admin_mailer_smtp_starttls_enable = False
 
+    self.beast_cli_administration_enabled = false
+
     self.beast_pooled_publisher_pool_core_size = 1
     self.beast_pooled_publisher_pool_max_size = 5
     self.beast_pooled_publisher_queue_size = 100
@@ -228,6 +230,9 @@ class propertyhandler(object):
     if "beast.admin.mailer.smtp.starttls.enable" in properties:
       self.beast_admin_mailer_smtp_starttls_enable = properties["beast.admin.mailer.smtp.starttls.enable"] == "true"
 
+    if "beast.cli.administration.enabled" in properties:
+      self.beast_cli_administration_enabled = properties["beast.cli.administration.enabled"] == "true"
+
     if "beast.pooled.publisher.pool.core.size" in properties:
       self.beast_pooled_publisher_pool_core_size = int(properties["beast.pooled.publisher.pool.core.size"])
     if "beast.pooled.publisher.pool.max.size" in properties:
@@ -343,6 +348,8 @@ class propertyhandler(object):
     s += "beast.admin.mailer.transport.protocol = %s\n"%self.beast_admin_mailer_transport_protocol
     s += "beast.admin.mailer.smtp.auth = %s\n"%("true" if self.beast_admin_mailer_smtp_auth else "false")
     s += "beast.admin.mailer.smtp.starttls.enable = %s\n"%("true" if self.beast_admin_mailer_smtp_starttls_enable else "false")
+    s += "\n"
+    s += "beast.cli.administration.enabled = %s\n"%("true" if self.beast_cli_administration_enabled else "false")
     s += "\n"
     s += "#BEAST exchange pool settings\n"
     s += "beast.pooled.publisher.pool.core.size = %d\n"%self.beast_pooled_publisher_pool_core_size
@@ -498,6 +505,8 @@ class propertyhandler(object):
       fp.write("beast.admin.mailer.transport.protocol=%s\n"%self.beast_admin_mailer_transport_protocol)
       fp.write("beast.admin.mailer.smtp.auth=%s\n"%("true" if self.beast_admin_mailer_smtp_auth else "false"))
       fp.write("beast.admin.mailer.smtp.starttls.enable=%s\n"%("true" if self.beast_admin_mailer_smtp_starttls_enable else "false"))
+
+      fp.write("beast.cli.administration.enabled=%s\n"%("true" if self.beast_cli_administration_enabled else "false"))
 
       fp.write("\n")
       fp.write("# BEAST mailer specifics\n")
