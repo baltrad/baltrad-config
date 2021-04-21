@@ -31,7 +31,8 @@ setuptools.setup(name="baltrad.config",
     entry_points = {
         "console_scripts" : [
             "baltrad-config = baltrad.config.main:run",
-            "bltcmd = baltrad.config.bltcmd:run"
+            "bltcfg = baltrad.config.bltcmd:run",
+            "bltgroovyroute = baltrad.config.bltgroovyroute:run"
         ]
     },
 )
