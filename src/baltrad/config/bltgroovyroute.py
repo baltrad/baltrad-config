@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import getpass
 import os
 import sys
@@ -14,11 +15,12 @@ def run_command(args):
 
   result = """
 {
-  "groovy-script": {
+  "groovy-route": {
     "name":"%s",
     "author":"%s",
     "description":"%s",
     "active":%s,
+    "recipients":[],
     "script":%s
   }
 }

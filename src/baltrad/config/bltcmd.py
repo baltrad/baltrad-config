@@ -132,9 +132,6 @@ def run_command(args, unknown_args):
         extra_args=unknown_args[1:]
         content = "{%s}"%(",".join(extra_args))
 
-  if len(unknown_args) > 0 and unknown_args[0] in ["add_route", "update_route"] and args.groovy is not None:
-    content = "{\"groovy-route\":{\"script\":%s}}"%json.dumps(open(args.groovy).read())
-
   if content is None:
     content="{}"
 
