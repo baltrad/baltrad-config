@@ -108,6 +108,9 @@ class bltcmd(object):
 
 def run_command(args, unknown_args):
   nodename = args.nodename
+  
+  unknown_args = args.servercmd
+  
   privatekey = DEFAULT_PRIVATE_KEY
   uri = "%s/BaltradDex/administrator.htm"%args.host
   
@@ -149,7 +152,7 @@ def run_command(args, unknown_args):
 
 def run():
   parser = create_argparse("Used for communicating with the dex/beast engine")
-
+  
   parser.add_argument("--nodename=", dest="nodename", default=DEFAULT_NODE_NAME, help="The name of the node we should present us with.")
 
   parser.add_argument("--privatekey=", dest="privatekey", default=None, help="The name of the folder where the private key is located")
@@ -169,6 +172,8 @@ def run():
   parser.add_argument(
     "--data=", dest="data", default=None, help="Can be used instead of --file to specify data."
   )
+  
+  parser.add_argument("servercmd", nargs='+', help="server command and arguments, type 'help' or 'help <func>' to get help from server")
 
   parser.set_defaults(func=run_command)
   

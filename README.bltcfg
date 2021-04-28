@@ -1,0 +1,168 @@
+################################################################################
+# Copyright (C) 2009-2021 Swedish Meteorological and Hydrological Institute, SMHI,
+#
+# This file is part of the baltrad-config module
+#
+# baltrad-config is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# baltrad-config is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with the baltrad-config.  If not, see <http://www.gnu.org/licenses/>.
+################################################################################
+
+Introduction:
+The baltrad-node provides a JSON configuration interface that can be used to modify parts of the system. It is essentially built for handling the routing and scheduling but it also provides other capabilities like changing user password and updating settings.
+
+The first command to use to get started is:
+%> bltcfg --help
+
+This command will give you some basic information on how to use the options and settings. Take note of 3 things,
++ servercmd - This is a list of entries that can be sent to the server. E.g. list_schedule, help, help get_route and so on.
++ --file - Can be used to point to a text file containing json data
++ --data - Can be used instead of --file when there is just a minor json entry
+
+%> bltcfg help
+
+As one can see, this help text says that the command always is of the format:
+{"command":"<command>"[,"arguments":{...})
+
+"bltcfg" on the other hand will always but the first entry in the servercmd into the <command> tag. The value for the arguments will always be taken from either the content of the --file, or the content of the --data. There is a third variant that also can be used. A list of entries in the format '"name":"value"' '"other-name":"other value"' and so on. In this case the entries will be combined into a dictionary of the format {"name":"value", "other-name":"other value"} as the arguments value.
+
+You can get more information about a specific command by issuing "help" followed by the command (e.g. list_schedule) which would be:
+%> bltcfg help list_schedule
+
+Besides modifying individual entries with commands like "add_adaptor", "update_route", ... you will also be able to export and import entries for moving to a different node if required.
+
+
+Let's get started. First, assuming that you want to create an adaptor. Get help about the add_adaptor command.
+%> bltcfg help add_adaptor
+
+This command will produce the following information which also provides an example on a valid command:
+Adds an adaptor to the system. Format is:
+{
+  "command" : "add_adaptor",
+  "arguments" : {
+    "adaptor" : {
+      "name" : "RAVE",
+      "type" : "XMLRPC",
+      "uri" : "http://localhost:8085/RAVE",
+      "timeout" : 5000
+    }
+  }
+}
+
+As mentioned earlier, the bltcfg have a different way of handling the command so we need to extract the value for "arguments" which is:
+{"adaptor" : {
+   "name" : "RAVE",
+   "type" : "XMLRPC",
+   "uri" : "http://localhost:8085/RAVE",
+   "timeout" : 5000
+  }
+}
+
+Modify this entry according to needs and add this content to a file called for example RAVE_adaptor.json. After that you can add this adaptor to the system by using the command:
+
+%> bltcfg add_adaptor --file=adaptor.json
+
+To verify that the adaptor has been added to the system it is possible to either get the entry:
+%> bltcfg get_adaptor '"name":"RAVE"'
+=>
+{
+  "adaptor": {
+    "name": "RAVE",
+    "type": "XMLRPC",
+    "uri": "http://localhost:8085/RAVE",
+    "timeout": 5000
+  }
+}
+
+
+or list the adaptors
+%> bltcfg list_adaptors
+
+
+The above behaviour is valid for all different commands. Get help about a command, use the command and verify the result.
+
+
+There is two interesting commands available for routes. These commands are "list_route_types" which will give a list of all registered types. The other command is create_route_template which is used to generate a template for the specified route type. For example
+%> bltcfg create_route_template '"route-type":"acrr-route"'
+
+
+IMPORTING/EXPORTING
+When a system has been configured or if the configuration is performed using the GUI. It is possible to export the configuration from the node so that it is possible to replicate the configuration in another node. The same goes for what has been described earlier in this README file but the behaviour is slightly different. It is possible to purge the entries before adding exported entries. It is also working on lists and not on single entries.
+
+Again, the adaptors will be used as an example.
+
+%> bltcfg export_adaptors > exported_adaptors.json
+%> cat exported_adaptors.json
+{
+  "adaptors": [
+    {
+      "adaptor": {
+        "name": "RAVE2",
+        "type": "XMLRPC",
+        "uri": "http://localhost:8086/RAVE",
+        "timeout": 5000
+      }
+    },
+    {
+      "adaptor": {
+        "name": "RAVE",
+        "type": "XMLRPC",
+        "uri": "http://localhost:8085/RAVE",
+        "timeout": 5000
+      }
+    }
+  ]
+}
+
+
+As can be seen, It doesn't differ much from the list_adaptors but there is a distinctive change. It has got "adaptors" as name. This is for the possibility to add additional information in the future without having to change the API.
+
+The order of settings are as follows when it comes to routes and schedules.
+
+1) Adaptors has to be created
+2) Anomaly detectors has to be added
+3) Routes can be created
+4) And schedules can be bound to the routes.
+
+The first thing to do is to take a backup of the current configuration when it comes to routes and schedules.
+%> bltcfg export_schedule > exported_schedule.json
+%> bltcfg export_routes > exported_routes.json
+%> bltcfg export_anomaly_detectors > exported_anomaly_detectors.json
+%> bltcfg export_adaptors > exported_adaptors.json
+
+After that we can focus on how to import the configuration into this or any other system. If we want to ensure that the current configuration is clear, then we need to run drop-commands prior the import. Since everything has to be removed in correct order, the following sequence will ensure that as much as possible is removed.
+
+%> bltcfg drop_schedule
+%> bltcfg drop_routes
+%> bltcfg drop_anomaly_detectors
+%> bltcfg drop_adaptors
+
+And after that it is just to import the configuration in the oposite direction.
+%> bltcfg import_adaptors --file=exported_adaptors.json
+%> bltcfg import_anomaly_detectors --file=exported_anomaly_detectors.json
+%> bltcfg import_routes --file=exported_routes.json
+%> bltcfg import_schedule --file=exported_schedule.json
+
+
+SETTINGS
+It is possible to modify some settings through the JSON - api. Currently it is only used for tweaking some maintainance related to dex registry and messages. This will most likely be extended in the future. These can also be tweaked, either with update_settings or else with the import/export routine. However, since these are actual setttings it's not possible to drop them.
+
+Same goes for updating using import / export.
+%> bltcfg export_settings > exported_settings.json
+
+Modify accordingly and then
+%> bltcfg import_settings --file=exported_settings.json
+
+
+
+
+
