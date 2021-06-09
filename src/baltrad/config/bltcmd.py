@@ -123,8 +123,10 @@ def run_command(args, unknown_args):
   cmd = bltcmd(nodename, privatekey, uri)
   
   content = args.data
-  if args.fname is not None and os.path.exists(args.fname):
-    content = open(args.fname).read()
+
+  fpath = os.path.abspath(os.path.expanduser(args.fname))
+  if fpath is not None and os.path.exists(fpath):
+    content = open(fpath).read()
 
   extra_args=None
   if content is None:
