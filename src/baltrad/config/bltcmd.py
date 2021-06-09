@@ -124,7 +124,9 @@ def run_command(args, unknown_args):
   
   content = args.data
 
-  fpath = os.path.abspath(os.path.expanduser(args.fname))
+  fpath = None
+  if args.fname is not None:
+    fpath = os.path.abspath(os.path.expanduser(args.fname))
   if fpath is not None and os.path.exists(fpath):
     content = open(fpath).read()
 
