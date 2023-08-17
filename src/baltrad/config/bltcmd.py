@@ -33,7 +33,7 @@ import json
 import os
 import base64
 import datetime
-from keyczar import keyczar 
+from baltradcrypto.crypto import keyczarcrypto 
 
 DEFAULT_HOST="http://localhost:8080"
 DEFAULT_URI="%s/BaltradDex/administrator.htm"%DEFAULT_HOST
@@ -82,7 +82,7 @@ class bltcmd(object):
     self._uri = uri
     self._nodename = nodename
     self._privatekey=privatekey
-    self._signer = keyczar.Signer.Read(self._privatekey)
+    self._signer = keyczarcrypto.keyczar_signer.read(self._privatekey)
       
   def _generate_headers(self, message):
     d = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")

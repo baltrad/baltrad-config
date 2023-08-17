@@ -3,15 +3,7 @@ import setuptools
 import sys
 
 REQUIRED_PACKAGES= [
-    "pyasn1",
-    "pycrypto >= 2.4",
-    "python-keyczar >= 0.7b",
-]
-if sys.version_info > (3,):
-    REQUIRED_PACKAGES= [
-    "pyasn1",
-    "pycrypto >= 2.4",
-    "python3-keyczar >= 0.71rc0",
+    "baltrad-crypto",
 ]
 
 setuptools.setup(name="baltrad.config",
