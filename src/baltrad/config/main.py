@@ -32,6 +32,8 @@ import pwd, grp
 from baltrad.config import propertyhandler
 from baltrad.config import database
 
+from baltradcrypto.crypto import keyczarcrypto
+
 if sys.version_info < (3,):
   import urlparse
 else:
@@ -69,7 +71,8 @@ def createdir(dir):
     os.mkdir(dir)
   elif not os.path.isdir(dir):
     raise Exception("%s exists but is not a directory"%dir)
-    
+
+# This method uses the linux command keytool    
 def create_keystore(keystore, kpwd=None, dname=None):
   while kpwd == None:
     kpwd=read_input("Keystore password: ")
@@ -88,37 +91,48 @@ def create_keystore(keystore, kpwd=None, dname=None):
   return kpwd
 
 
-def keyczar_tool(*module_args):
-  python_bin = sys.executable
-  keytool = "keyczar.keyczart"
-  if (sys.version_info > (3,0)):
-    keytool = "keyczar.tool.keyczart"
-  args = [python_bin, "-m", keytool]
-  args.extend(module_args)
-  ocode = subprocess.call(args)
-  if ocode != 0:
-    raise Exception("keytool command failed")
+#def keyczar_tool(*module_args):
+#  python_bin = sys.executable
+#  keytool = "keyczar.keyczart"
+#  if (sys.version_info > (3,0)):
+#    keytool = "keyczar.tool.keyczart"
+#  args = [python_bin, "-m", keytool]
+#  args.extend(module_args)
+#  ocode = subprocess.call(args)
+#  if ocode != 0:
+#    raise Exception("keytool command failed")
+    
 
-      
+# Code snippet from baltrad-exchange/src/bexchange/client/cfgcmd.py
+
 def create_priv_pub_keys(keys_root, nodename):
   priv_nodekey = "%s/%s.priv"%(keys_root, nodename)
   pub_nodekey = "%s/%s.pub"%(keys_root, nodename)
   if not os.path.exists(priv_nodekey):
     createdir(priv_nodekey)
-    keyczar_tool("create",
-                 "--location=%s" % priv_nodekey,
-                 "--purpose=sign",
-                 "--name=%s" % nodename,
-                 "--asymmetric=dsa")
-    keyczar_tool("addkey",
-                 "--location=%s" % priv_nodekey,
-                 "--status=primary")
+#    keyczar_tool("create",
+#                 "--location=%s" % priv_nodekey,
+#                 "--purpose=sign",
+#                 "--name=%s" % nodename,
+#                "--asymmetric=dsa")
+#    keyczar_tool("addkey",
+#                 "--location=%s" % priv_nodekey,
+#                 "--status=primary")
   
   if not os.path.exists(pub_nodekey):
     createdir(pub_nodekey)
-    keyczar_tool("pubkey",
-                 "--location=%s" % priv_nodekey,
-                 "--destination=%s" % pub_nodekey)               
+#    keyczar_tool("pubkey",
+#                 "--location=%s" % priv_nodekey,
+#                 "--destination=%s" % pub_nodekey)
+    keyczar_signer = keyczarcrypto.create_keyczar_key()
+    keyczar_verifier = keyczarcrypto.keyczar_verifier(keyczar_signer._key)
+        
+    keyczar_signer.export(priv_nodekey, nodename)
+    keyczar_verifier.export(pub_nodekey, nodename)
+
+    print("Created: ")
+    print("  Private key: %s"%priv_nodekey)
+    print("  Public  key: %s"%pub_nodekey)               
 
 def create_initial_config(args):
   a=propertyhandler.propertyhandler()
