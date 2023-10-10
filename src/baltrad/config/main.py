@@ -90,40 +90,16 @@ def create_keystore(keystore, kpwd=None, dname=None):
     raise Exception("keytool command failed for keystore creation")
   return kpwd
 
-
-#def keyczar_tool(*module_args):
-#  python_bin = sys.executable
-#  keytool = "keyczar.keyczart"
-#  if (sys.version_info > (3,0)):
-#    keytool = "keyczar.tool.keyczart"
-#  args = [python_bin, "-m", keytool]
-#  args.extend(module_args)
-#  ocode = subprocess.call(args)
-#  if ocode != 0:
-#    raise Exception("keytool command failed")
-    
-
 # Code snippet from baltrad-exchange/src/bexchange/client/cfgcmd.py
-
 def create_priv_pub_keys(keys_root, nodename):
   priv_nodekey = "%s/%s.priv"%(keys_root, nodename)
   pub_nodekey = "%s/%s.pub"%(keys_root, nodename)
   if not os.path.exists(priv_nodekey):
-    createdir(priv_nodekey)
-#    keyczar_tool("create",
-#                 "--location=%s" % priv_nodekey,
-#                 "--purpose=sign",
-#                 "--name=%s" % nodename,
-#                "--asymmetric=dsa")
-#    keyczar_tool("addkey",
-#                 "--location=%s" % priv_nodekey,
-#                 "--status=primary")
-  
+    os.makedirs(priv_nodekey)
+
   if not os.path.exists(pub_nodekey):
-    createdir(pub_nodekey)
-#    keyczar_tool("pubkey",
-#                 "--location=%s" % priv_nodekey,
-#                 "--destination=%s" % pub_nodekey)
+    os.makedirs(pub_nodekey)
+
     keyczar_signer = keyczarcrypto.create_keyczar_key()
     keyczar_verifier = keyczarcrypto.keyczar_verifier(keyczar_signer._key)
         

@@ -19,7 +19,7 @@ along with baltrad-config.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
 import socket
-import radar_utils.jprops
+import baltradutils.jprops
 import tempfile
 import re
 import os
@@ -114,7 +114,7 @@ class propertyhandler(object):
     
   def _load_properties(self, cfile):
     with open(cfile, "r") as fp:
-      return radar_utils.jprops.load_properties(fp)
+      return baltradutils.jprops.load_properties(fp)
     
   def write_config_file(self, config_file):
     with open(config_file, "w") as fp:

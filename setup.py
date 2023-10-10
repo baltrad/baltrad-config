@@ -3,7 +3,8 @@ import setuptools
 import sys
 
 REQUIRED_PACKAGES= [
-    "baltrad-crypto",
+    "baltradcrypto",
+    "baltradutils"
 ]
 
 setuptools.setup(name="baltrad.config",
