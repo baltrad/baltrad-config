@@ -102,6 +102,7 @@ class propertyhandler(object):
 
     self.rave_ctpath = ""
     self.rave_pgfs = "4"
+    self.rave_pgf_tasks_per_worker = 100
     self.rave_loglevel = "info"
     self.rave_logid = "'PGF[rave.%s]'"%self.nodename
     self.rave_centerid="ORG:82"
@@ -110,6 +111,10 @@ class propertyhandler(object):
     self.rave_pgf_compositing_use_lazy_loading = False
     self.rave_pgf_compositing_use_lazy_loading_preloads = False
     
+    self.rave_pgf_tiledcompositing_nrprocesses = None
+    self.rave_pgf_tiledcompositing_timeout = 290
+    self.rave_pgf_tiledcompositing_allow_missing_tiles = False
+
     self.post_config_scripts = []
     
   def _load_properties(self, cfile):
@@ -126,6 +131,12 @@ class propertyhandler(object):
       if s.lower() in ["true", "1", "yes", "y", "t"]:
         return True
     return False 
+
+  def str_to_int_or_none(self, s):
+    try:
+      return int(s)
+    except:
+      return None
 
   def open_config_file(self, config_file):
     properties = self._load_properties(config_file)
@@ -250,6 +261,8 @@ class propertyhandler(object):
       self.rave_ctpath = properties["rave.ctpath"]
     if "rave.pgfs" in properties:
       self.rave_pgfs = properties["rave.pgfs"]
+    if "rave.pgf.tasks.per.worker" in properties:
+      self.rave_pgf_tasks_per_worker = int(properties["rave.pgf.tasks.per.worker"])
     if "rave.loglevel" in properties:
       self.rave_loglevel = properties["rave.loglevel"]
     if "rave.logid" in properties:
@@ -265,6 +278,13 @@ class propertyhandler(object):
     if "rave.pgf.compositing.use_lazy_loading_preloads" in properties:
       self.rave_pgf_compositing_use_lazy_loading_preloads = properties["rave.pgf.compositing.use_lazy_loading_preloads"]
 
+    if "rave.pgf.tiledcompositing.nrprocesses" in properties:
+      tmpstr = properties["rave.pgf.tiledcompositing.nrprocesses"]
+      self.rave_pgf_tiledcompositing_nrprocesses = self.str_to_int_or_none(tmpstr)
+    if "rave.pgf.tiledcompositing.timeout" in properties:
+      self.rave_pgf_tiledcompositing_timeout = int(properties["rave.pgf.tiledcompositing.timeout"])
+    if "rave.pgf.tiledcompositing.allow_missing_tiles" in properties:
+      self.rave_pgf_tiledcompositing_allow_missing_tiles = self.str_to_bool(properties["rave.pgf.tiledcompositing.allow_missing_tiles"])
 
     index = 1
     self.post_config_scripts=[]
@@ -365,6 +385,7 @@ class propertyhandler(object):
     s += "\n"
     s += "#rave.ctpath=%s\n"%self.rave_ctpath
     s += "rave.pgfs=%s\n"%self.rave_pgfs
+    s += "rave.pgf.tasks.per.worker=%d\n"%self.rave_pgf_tasks_per_worker
     s += "rave.loglevel=%s\n"%self.rave_loglevel
     s += "rave.logid=%s\n"%self.rave_logid
     s += "rave.centerid=%s\n"%self.rave_centerid
@@ -375,6 +396,12 @@ class propertyhandler(object):
       s += "rave.scansunout=%s\n"%self.rave_scansun_out_path
     s += "rave.pgf.compositing.use_lazy_loading=%s\n"%self.rave_pgf_compositing_use_lazy_loading
     s += "rave.pgf.compositing.use_lazy_loading_preloads=%s\n"%self.rave_pgf_compositing_use_lazy_loading_preloads
+    if self.rave_pgf_tiledcompositing_nrprocesses is not None:
+      s += "rave.pgf.tiledcompositing.nrprocesses=%d\n"%self.rave_pgf_tiledcompositing_nrprocesses
+    else:
+      s += "rave.pgf.tiledcompositing.nrprocesses=None\n"
+    s += "rave.pgf.tiledcompositing.timeout=%d\n"%self.rave_pgf_tiledcompositing_timeout
+    s += "rave.pgf.tiledcompositing.allow_missing_tiles=%s\n"%("true" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "false")
     
     s += "\n\n"
     s += "# Additional post config scripts.\n"
@@ -563,7 +590,18 @@ class propertyhandler(object):
         row = "RAVE_PGF_COMPOSITING_USE_LAZY_LOADING_PRELOADS=%s\n"%str(self.rave_pgf_compositing_use_lazy_loading_preloads)
       elif row.startswith("RAVE_PGF_COMPOSITING_USE_LAZY_LOADING"):
         row = "RAVE_PGF_COMPOSITING_USE_LAZY_LOADING=%s\n"%str(self.rave_pgf_compositing_use_lazy_loading)
-        
+      elif row.startswith("RAVE_MULTIPROCESSING_MAX_TASKS_PER_WORKER"):
+        row = "RAVE_MULTIPROCESSING_MAX_TASKS_PER_WORKER: int = %d\n"%self.rave_pgf_tasks_per_worker
+      elif row.startswith("RAVE_TILE_COMPOSITING_PROCESSES"):
+        if self.rave_pgf_tiledcompositing_nrprocesses is not None:
+          row = "RAVE_TILE_COMPOSITING_PROCESSES=%d\n"%self.rave_pgf_tiledcompositing_nrprocesses
+        else:
+          row = "RAVE_TILE_COMPOSITING_PROCESSES=None\n"
+      elif row.startswith("RAVE_TILE_COMPOSITING_TIMEOUT"):
+        row = "RAVE_TILE_COMPOSITING_TIMEOUT: int = %d\n"%self.rave_pgf_tiledcompositing_timeout
+      elif row.startswith("RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES"):
+        row = "RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES=%s\n"%("True" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "False")
+
       nrows.append(row)
     fp = open(ravedefinesfile, "w")
     for row in nrows:
