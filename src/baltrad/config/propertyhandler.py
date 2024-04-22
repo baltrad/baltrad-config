@@ -102,7 +102,7 @@ class propertyhandler(object):
 
     self.rave_ctpath = ""
     self.rave_pgfs = "4"
-    self.rave_pgf_tasks_per_worker = 100
+    self.rave_pgf_tasks_per_worker = None
     self.rave_loglevel = "info"
     self.rave_logid = "'PGF[rave.%s]'"%self.nodename
     self.rave_centerid="ORG:82"
@@ -262,7 +262,7 @@ class propertyhandler(object):
     if "rave.pgfs" in properties:
       self.rave_pgfs = properties["rave.pgfs"]
     if "rave.pgf.tasks.per.worker" in properties:
-      self.rave_pgf_tasks_per_worker = int(properties["rave.pgf.tasks.per.worker"])
+      self.rave_pgf_tasks_per_worker = self.str_to_int_or_none(properties["rave.pgf.tasks.per.worker"])
     if "rave.loglevel" in properties:
       self.rave_loglevel = properties["rave.loglevel"]
     if "rave.logid" in properties:
@@ -385,7 +385,10 @@ class propertyhandler(object):
     s += "\n"
     s += "#rave.ctpath=%s\n"%self.rave_ctpath
     s += "rave.pgfs=%s\n"%self.rave_pgfs
-    s += "rave.pgf.tasks.per.worker=%d\n"%self.rave_pgf_tasks_per_worker
+    if self.rave_pgf_tasks_per_worker is not None:
+      s += "rave.pgf.tasks.per.worker=%d\n"%self.rave_pgf_tasks_per_worker
+    else:
+      s += "rave.pgf.tasks.per.worker=None\n"
     s += "rave.loglevel=%s\n"%self.rave_loglevel
     s += "rave.logid=%s\n"%self.rave_logid
     s += "rave.centerid=%s\n"%self.rave_centerid
@@ -591,7 +594,10 @@ class propertyhandler(object):
       elif row.startswith("RAVE_PGF_COMPOSITING_USE_LAZY_LOADING"):
         row = "RAVE_PGF_COMPOSITING_USE_LAZY_LOADING=%s\n"%str(self.rave_pgf_compositing_use_lazy_loading)
       elif row.startswith("RAVE_MULTIPROCESSING_MAX_TASKS_PER_WORKER"):
-        row = "RAVE_MULTIPROCESSING_MAX_TASKS_PER_WORKER: int = %d\n"%self.rave_pgf_tasks_per_worker
+        if self.rave_pgf_tasks_per_worker is not None:
+          row = "RAVE_MULTIPROCESSING_MAX_TASKS_PER_WORKER=%d\n"%self.rave_pgf_tasks_per_worker
+        else:
+          row = "RAVE_MULTIPROCESSING_MAX_TASKS_PER_WORKER=None\n"
       elif row.startswith("RAVE_TILE_COMPOSITING_PROCESSES"):
         if self.rave_pgf_tiledcompositing_nrprocesses is not None:
           row = "RAVE_TILE_COMPOSITING_PROCESSES=%d\n"%self.rave_pgf_tiledcompositing_nrprocesses
