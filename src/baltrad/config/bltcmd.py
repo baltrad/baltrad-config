@@ -86,7 +86,7 @@ class bltcmd(object):
       
   def _generate_headers(self, message):
     d = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    signature = self._signer.Sign(d + ":" + message)
+    signature = self._signer.sign(d + ":" + message)
     headers = {
       "Node-Name": self._nodename, 
       "Content-Type":"application/json",
