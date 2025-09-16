@@ -614,7 +614,7 @@ class propertyhandler(object):
       elif row.startswith("RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES"):
         row = "RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES=%s\n"%("True" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "False")
       elif row.startswith("HACDATA_DIRECTORY"):
-        row = "HACDATA_DIRECTORY=%s\n"%self.rave_pgf_hac_datafolder
+        row = "HACDATA_DIRECTORY=\"%s\"\n"%self.rave_pgf_hac_datafolder
 
       nrows.append(row)
     fp = open(ravedefinesfile, "w")
