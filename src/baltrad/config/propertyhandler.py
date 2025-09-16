@@ -115,6 +115,8 @@ class propertyhandler(object):
     self.rave_pgf_tiledcompositing_timeout = 290
     self.rave_pgf_tiledcompositing_allow_missing_tiles = False
 
+    self.rave_pgf_hac_datafolder = "/var/lib/baltrad/rave/hac"
+
     self.post_config_scripts = []
     
   def _load_properties(self, cfile):
@@ -286,6 +288,9 @@ class propertyhandler(object):
     if "rave.pgf.tiledcompositing.allow_missing_tiles" in properties:
       self.rave_pgf_tiledcompositing_allow_missing_tiles = self.str_to_bool(properties["rave.pgf.tiledcompositing.allow_missing_tiles"])
 
+    if "rave.pgf.hac.datafolder" in properties:
+      self.rave_pgf_hac_datafolder = properties["rave.pgf.hac.datafolder"]
+
     index = 1
     self.post_config_scripts=[]
     while "baltrad.post.config.script.%d"%index in properties:
@@ -405,7 +410,8 @@ class propertyhandler(object):
       s += "rave.pgf.tiledcompositing.nrprocesses=None\n"
     s += "rave.pgf.tiledcompositing.timeout=%d\n"%self.rave_pgf_tiledcompositing_timeout
     s += "rave.pgf.tiledcompositing.allow_missing_tiles=%s\n"%("true" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "false")
-    
+    s += "rave.pgf.hac.datafolder=%s\n"%self.rave_pgf_hac_datafolder
+
     s += "\n\n"
     s += "# Additional post config scripts.\n"
     s += "# These scripts are called as python scripts with the only additional argument pointing at this\n"
@@ -607,6 +613,8 @@ class propertyhandler(object):
         row = "RAVE_TILE_COMPOSITING_TIMEOUT: int = %d\n"%self.rave_pgf_tiledcompositing_timeout
       elif row.startswith("RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES"):
         row = "RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES=%s\n"%("True" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "False")
+      elif row.startswith("HACDATA_DIRECTORY"):
+        row = "HACDATA_DIRECTORY=%s\n"%self.rave_pgf_hac_datafolder
 
       nrows.append(row)
     fp = open(ravedefinesfile, "w")
