@@ -77,11 +77,23 @@ class baltrad_database(object):
       self._upgrade_bdb()
     except Exception as e:
       traceback.print_exc(e)
+
     try:
+      if not self.does_table_exist("beast_adaptors"):
+        try:
+          self._create_beast()
+        except Exception as e:
+          traceback.print_exc(e)
       self._upgrade_beast()
     except Exception as e:
       traceback.print_exc(e)
+
     try:
+      if not self.does_table_exist("dex_users"):      
+        try:
+          self._create_dex()
+        except Exception as e:
+          traceback.print_exc(e)
       self._upgrade_dex()
     except Exception as e:
       traceback.print_exc(e)
@@ -163,5 +175,23 @@ class baltrad_database(object):
     finally:
       if dbcursor:
         dbcursor.close()
+      if connection:
+        connection.close()
+
+  def does_table_exist(self, tablename):
+    hostname=self._hostname
+    portnr="5432"
+    if self._hostname.find(":") > 0:
+      hostname = self._hostname[0:self._hostname.find(":")]
+      portnr = self._hostname[self._hostname.find(":")+1:]
+
+    try:      
+      connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s password=%s"%(hostname,portnr,self._dbname,self._username,self._password))
+      with connection.cursor() as cursor:
+        cursor.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s')"%tablename)
+        return cursor.fetchone()[0]
+    except psycopg2.DatabaseError as e:
+      raise Exception("Failed to check for database table: %s"%e.__str__(), e)
+    finally:
       if connection:
         connection.close()

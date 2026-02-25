@@ -181,6 +181,10 @@ def change_mod(fname, mod):
   if c_uid == 0 or f_uid == c_uid:
     os.chown(fname, mod)
 
+def get_file_owner(fname):
+  f_uid = os.stat(fname).st_uid
+  return pwd.getpwuid(f_uid).pw_name
+
 def execute_post_config(args):
   a=propertyhandler.propertyhandler()
   a.open_config_file(args.conf)
@@ -196,7 +200,6 @@ def execute_post_config(args):
     a.update_rave_defines(args.ravedefinesfile, args.bltnodefile)
 
   # Change owner to root:baltrad
-  uid = pwd.getpwnam("root").pw_uid
   baltrad_uid = pwd.getpwnam(a.baltrad_user).pw_uid
   baltrad_gid = grp.getgrnam(a.baltrad_group).gr_gid
   if get_current_user() == "root":
@@ -210,7 +213,6 @@ def execute_post_config(args):
     
     if not args.no_rave_config:
       os.chown(args.ravedefinesfile, baltrad_uid, baltrad_gid)
-
   else:
     print("WARNING! Could not change ownership of configuration files:")
     print("%s"%args.bltnodefile)
@@ -223,13 +225,40 @@ def execute_post_config(args):
     if not args.no_rave_config:
       print("%s"%args.ravedefinesfile)
 
-  os.chmod(args.bltnodefile, 0o660)
-  os.chmod(args.dexfile, 0o660)
-  os.chmod(args.dexdbfile, 0o660)
-  os.chmod(args.dexfcfile, 0o660)
-  os.chmod(args.dexbeastfile, 0o660)
-  os.chmod(args.tomcatserverfile, 0o660)
-  os.chmod(args.appcontextfile, 0o660)
+  if get_file_owner(args.bltnodefile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.bltnodefile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.bltnodefile, a.baltrad_user))
+
+  if get_file_owner(args.dexfile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.dexfile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.dexfile, a.baltrad_user))
+
+  if get_file_owner(args.dexdbfile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.dexdbfile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.dexdbfile, a.baltrad_user))
+
+  if get_file_owner(args.dexfcfile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.dexfcfile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.dexfcfile, a.baltrad_user))
+
+  if get_file_owner(args.dexbeastfile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.dexbeastfile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.dexbeastfile, a.baltrad_user))
+
+  if get_file_owner(args.tomcatserverfile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.tomcatserverfile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.tomcatserverfile, a.baltrad_user))
+
+  if get_file_owner(args.appcontextfile) == a.baltrad_user or get_current_user() == "root":
+    os.chmod(args.appcontextfile, 0o660)
+  else:
+    print("INFO! File %s is not owned by user %s, leaving permissions unchanged"%(args.appcontextfile, a.baltrad_user))
 
   if not args.no_rave_config:
     os.chmod(args.ravedefinesfile, 0o664)
