@@ -58,16 +58,16 @@ class baltrad_database(object):
   def create(self):
     try:
       self._create_bdb()
-    except Exception as e:
-      traceback.print_exc(e)
+    except Exception:
+      traceback.print_exc()
     try:
       self._create_beast()
-    except Exception as e:
-      traceback.print_exc(e)
+    except Exception:
+      traceback.print_exc()
     try:
       self._create_dex()
-    except Exception as e:
-      traceback.print_exc(e)
+    except Exception:
+      traceback.print_exc()
 
   ##
   # Upgrades the database tables
@@ -75,28 +75,28 @@ class baltrad_database(object):
   def upgrade(self):
     try:
       self._upgrade_bdb()
-    except Exception as e:
-      traceback.print_exc(e)
+    except Exception:
+      traceback.print_exc()
 
     try:
       if not self.does_table_exist("beast_adaptors"):
         try:
           self._create_beast()
-        except Exception as e:
-          traceback.print_exc(e)
+        except Exception:
+          traceback.print_exc()
       self._upgrade_beast()
-    except Exception as e:
-      traceback.print_exc(e)
+    except Exception:
+      traceback.print_exc()
 
     try:
       if not self.does_table_exist("dex_users"):      
         try:
           self._create_dex()
-        except Exception as e:
-          traceback.print_exc(e)
+        except Exception:
+          traceback.print_exc()
       self._upgrade_dex()
-    except Exception as e:
-      traceback.print_exc(e)
+    except Exception:
+      traceback.print_exc()
 
   ##
   # Updates the admin users password
