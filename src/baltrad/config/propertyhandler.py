@@ -33,7 +33,7 @@ class propertyhandler(object):
     self.baltrad_user = "baltrad"
     self.baltrad_group = "baltrad" 
     self.db_username="baltrad"
-    self.db_password="baltrad"
+    self.db_password=None
     self.db_hostname="localhost"
     self.db_dbname="baltrad"
     self.db_pool_size=10
@@ -149,7 +149,11 @@ class propertyhandler(object):
       self.baltrad_group = properties["baltrad.group"]
 
     self.db_username = properties["baltrad.db.username"]
-    self.db_password = properties["baltrad.db.password"]
+
+    self.db_properties = None
+    if "baltrad.db.password" in properties:
+      self.db_password = properties["baltrad.db.password"]
+
     self.db_hostname = properties["baltrad.db.hostname"]
     self.db_dbname = properties["baltrad.db.dbname"]
     if "baltrad.db.pool.size" in properties:
@@ -308,7 +312,11 @@ class propertyhandler(object):
     s += "\n"
     s += "\n# postgres database specifics\n"
     s += "baltrad.db.username = %s\n"%self.db_username
-    s += "baltrad.db.password = %s\n"%self.db_password
+    print("PASSWORD: %s"%self.db_password)
+    if self.db_password is not None:
+      s += "baltrad.db.password = %s\n"%self.db_password
+    else:
+      s += "# baltrad.db.password = xyz\n"
     s += "baltrad.db.hostname = %s\n"%self.db_hostname
     s += "baltrad.db.dbname = %s\n"%self.db_dbname
     s += "baltrad.db.pool.size = %d\n"%self.db_pool_size
@@ -434,7 +442,10 @@ class propertyhandler(object):
       fp.write("baltrad.bdb.server.cherrypy.timeout = %d\n"%self.bdb_server_cherrypy_timeout)
       fp.write("baltrad.bdb.server.uri = %s\n"%self.bdb_server_uri)
       fp.write("baltrad.bdb.server.backend.type = %s\n"%self.bdb_server_backend_type)
-      fp.write("baltrad.bdb.server.backend.sqla.uri = postgresql://%s:%s@%s/%s\n"%(self.db_username,self.db_password,self.db_hostname,self.db_dbname))
+      if self.db_password is not None:
+        fp.write("baltrad.bdb.server.backend.sqla.uri = postgresql://%s:%s@%s/%s\n"%(self.db_username,self.db_password,self.db_hostname,self.db_dbname))
+      else:
+        fp.write("baltrad.bdb.server.backend.sqla.uri = postgresql://%s@%s/%s\n"%(self.db_username,self.db_hostname,self.db_dbname))
       fp.write("baltrad.bdb.server.backend.sqla.pool_size = %d\n"%self.bdb_server_backend_sqla_pool_size)
       fp.write("baltrad.bdb.server.log.level = %s\n"%self.bdb_server_log_level)
       fp.write("baltrad.bdb.server.log.type = %s\n"%self.bdb_server_log_type)
@@ -454,7 +465,10 @@ class propertyhandler(object):
       fp.write("baltrad.beast.pgf.key = %s/%s.priv\n"%(self.keystore_root,self.nodename))
       
       fp.write("\n# RAVE PGF Specific values\n")
-      fp.write("rave.db.uri=postgresql://%s:%s@%s/%s\n"%(self.db_username,self.db_password,self.db_hostname,self.db_dbname))
+      if self.db_password is not None:
+        fp.write("rave.db.uri=postgresql://%s:%s@%s/%s\n"%(self.db_username,self.db_password,self.db_hostname,self.db_dbname))
+      else:
+        fp.write("rave.db.uri=postgresql://%s@%s/%s\n"%(self.db_username,self.db_hostname,self.db_dbname))
     
   def write_dex_properties(self, dexfile):
     with open(dexfile) as fp:
@@ -487,7 +501,10 @@ class propertyhandler(object):
       else:
         fp.write("db.url=jdbc:postgresql://%s/%s?prepareThreshold=%i\n"%(self.db_hostname,self.db_dbname,self.prepare_threshold))
       fp.write("db.user=%s\n"%self.db_username)
-      fp.write("db.pwd=%s\n"%self.db_password)
+      if self.db_password is not None:
+        fp.write("db.pwd=%s\n"%self.db_password)
+      else:
+        fp.write("#db.pwd=...\n")
       fp.write("db.pool.size=%d\n"%self.db_pool_size)
 
     fp.close()
