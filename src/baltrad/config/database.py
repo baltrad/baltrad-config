@@ -101,7 +101,11 @@ class baltrad_database(object):
   ##
   # Updates the admin users password
   def update_admin_password(self, password):
-    connection = psycopg2.connect("host=%s dbname=%s user=%s password=%s"%(self._hostname,self._dbname,self._username,self._password))
+    if self._password is not None:
+      connection = psycopg2.connect("host=%s dbname=%s user=%s password=%s"%(self._hostname,self._dbname,self._username,self._password))
+    else:
+      connection = psycopg2.connect("host=%s dbname=%s user=%s"%(self._hostname,self._dbname,self._username))
+
     try:
       dbcursor = connection.cursor()
       dbcursor.execute("UPDATE dex_users SET PASSWORD=MD5('"+password+"') WHERE name='admin'")
@@ -164,8 +168,11 @@ class baltrad_database(object):
     if self._hostname.find(":") > 0:
       hostname = self._hostname[0:self._hostname.find(":")]
       portnr = self._hostname[self._hostname.find(":")+1:]
-      
-    connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s password=%s"%(hostname,portnr,self._dbname,self._username,self._password))
+
+    if self._password is not None:      
+      connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s password=%s"%(hostname,portnr,self._dbname,self._username,self._password))
+    else:
+      connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s"%(hostname,portnr,self._dbname,self._username))
     try:
       dbcursor = connection.cursor()
       dbcursor.execute(sql)
@@ -185,8 +192,11 @@ class baltrad_database(object):
       hostname = self._hostname[0:self._hostname.find(":")]
       portnr = self._hostname[self._hostname.find(":")+1:]
 
-    try:      
-      connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s password=%s"%(hostname,portnr,self._dbname,self._username,self._password))
+    try:
+      if self._password is not None:      
+        connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s password=%s"%(hostname,portnr,self._dbname,self._username,self._password))
+      else:
+        connection = psycopg2.connect("host=%s port=%s dbname=%s user=%s"%(hostname,portnr,self._dbname,self._username))
       with connection.cursor() as cursor:
         cursor.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s')"%tablename)
         return cursor.fetchone()[0]
