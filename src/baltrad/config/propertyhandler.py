@@ -117,6 +117,11 @@ class propertyhandler(object):
 
     self.rave_pgf_hac_datafolder = "/var/lib/baltrad/rave/hac"
 
+    self.rave_c_logtype = 'stderr'
+    self.rave_c_logid = "ravec[rave.%s]"%self.nodename
+    self.rave_c_loglevel = "silent"
+    self.rave_c_logfile = None
+
     self.post_config_scripts = []
     
   def _load_properties(self, cfile):
@@ -295,6 +300,21 @@ class propertyhandler(object):
     if "rave.pgf.hac.datafolder" in properties:
       self.rave_pgf_hac_datafolder = properties["rave.pgf.hac.datafolder"]
 
+    if "rave.c.logid" in properties:
+      self.rave_c_logid = properties["rave.c.logid"]
+      if not self.rave_c_logid:
+        self.rave_c_logid = "ravec[rave.%s]"%self.nodename         
+    if "rave.c.loglevel" in properties:
+      self.rave_c_loglevel = properties["rave.c.loglevel"]
+      if not self.rave_c_loglevel:
+        self.rave_c_loglevel = "silent"      
+    if "rave.c.logtype" in properties:
+      self.rave_c_logtype = properties["rave.c.logtype"]
+      if not self.rave_c_logtype:
+        self.rave_c_logtype = "stderr"
+    if "rave.c.logfile" in properties:
+      self.rave_c_logfile = properties["rave.c.logfile"]
+
     index = 1
     self.post_config_scripts=[]
     while "baltrad.post.config.script.%d"%index in properties:
@@ -312,7 +332,7 @@ class propertyhandler(object):
     s += "\n"
     s += "\n# postgres database specifics\n"
     s += "baltrad.db.username = %s\n"%self.db_username
-    print("PASSWORD: %s"%self.db_password)
+
     if self.db_password is not None:
       s += "baltrad.db.password = %s\n"%self.db_password
     else:
@@ -419,6 +439,14 @@ class propertyhandler(object):
     s += "rave.pgf.tiledcompositing.timeout=%d\n"%self.rave_pgf_tiledcompositing_timeout
     s += "rave.pgf.tiledcompositing.allow_missing_tiles=%s\n"%("true" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "false")
     s += "rave.pgf.hac.datafolder=%s\n"%self.rave_pgf_hac_datafolder
+
+    s += "rave.c.logtype=%s\n"%self.rave_c_logtype
+    if self.rave_c_logfile:
+      s += "rave.c.logfile=%s\n"%self.rave_c_logfile
+    else:
+      s += "rave.c.logfile=\n"
+    s += "rave.c.logid=%s\n"%self.rave_c_logid
+    s += "rave.c.loglevel=%s\n"%self.rave_c_loglevel
 
     s += "\n\n"
     s += "# Additional post config scripts.\n"
@@ -632,6 +660,17 @@ class propertyhandler(object):
         row = "RAVE_TILE_COMPOSITING_ALLOW_MISSING_TILES=%s\n"%("True" if self.rave_pgf_tiledcompositing_allow_missing_tiles else "False")
       elif row.startswith("HACDATA_DIRECTORY"):
         row = "HACDATA_DIRECTORY=\"%s\"\n"%self.rave_pgf_hac_datafolder
+      elif row.startswith("TOOLBOX_LOGTYPE"):
+        row = "TOOLBOX_LOGTYPE=\"%s\"\n"%self.rave_c_logtype
+      elif row.startswith("TOOLBOX_LOGFILE"):
+        if self.rave_c_logfile:
+          row = "TOOLBOX_LOGFILE=\"%s\"\n"%self.rave_c_logfile
+        else:
+          row = "TOOLBOX_LOGFILE=None\n"
+      elif row.startswith("TOOLBOX_LOGLEVEL"):
+        row = "TOOLBOX_LOGLEVEL=\"%s\"\n"%self.rave_c_loglevel
+      elif row.startswith("TOOLBOX_LOGID"):
+        row = "TOOLBOX_LOGID=\"%s\"\n"%self.rave_c_logid
 
       nrows.append(row)
     fp = open(ravedefinesfile, "w")
