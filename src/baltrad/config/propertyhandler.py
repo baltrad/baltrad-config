@@ -100,6 +100,9 @@ class propertyhandler(object):
 
     self.beast_manager_number_executors = 10
 
+    # BEAST ignore SAN errors
+    self.beast_exchange_https_ignore_san_error_hosts = None
+
     self.rave_ctpath = ""
     self.rave_pgfs = "4"
     self.rave_pgf_tasks_per_worker = None
@@ -268,6 +271,13 @@ class propertyhandler(object):
     if "beast.manager.number.executors" in properties:
       self.beast_manager_number_executors = int(properties["beast.manager.number.executors"])
 
+    if "beast.exchange.https.ignore_san_error_hosts" in properties:
+      self.beast_exchange_https_ignore_san_error_hosts = properties["beast.exchange.https.ignore_san_error_hosts"]
+      if self.beast_exchange_https_ignore_san_error_hosts:
+        self.beast_exchange_https_ignore_san_error_hosts = self.beast_exchange_https_ignore_san_error_hosts.strip()
+      if not self.beast_exchange_https_ignore_san_error_hosts:
+        self.beast_exchange_https_ignore_san_error_hosts = None
+
     if "rave.ctpath" in properties:
       self.rave_ctpath = properties["rave.ctpath"]
     if "rave.pgfs" in properties:
@@ -415,6 +425,12 @@ class propertyhandler(object):
     s += "\n"
     s += "#BEAST message manager settings\n"
     s += "beast.manager.number.executors = %d\n"%self.beast_manager_number_executors
+    s += "\n"
+    s += "# BEAST ignore SAN errors\n"
+    if self.beast_exchange_https_ignore_san_error_hosts:
+      s += "beast.exchange.https.ignore_san_error_hosts = %s\n"%self.beast_exchange_https_ignore_san_error_hosts
+    else:
+      s += "#beast.exchange.https.ignore_san_error_hosts = \n"
     s += "\n"
     s += "#rave.ctpath=%s\n"%self.rave_ctpath
     s += "rave.pgfs=%s\n"%self.rave_pgfs
@@ -606,6 +622,13 @@ class propertyhandler(object):
       
       fp.write("#BEAST message manager settings\n")
       fp.write("beast.manager.number.executors = %d\n"%self.beast_manager_number_executors)
+      fp.write("\n")
+
+      fp.write("# BEAST ignore SAN errors\n")
+      if self.beast_exchange_https_ignore_san_error_hosts:
+        fp.write("beast.exchange.https.ignore_san_error_hosts = %s\n"%self.beast_exchange_https_ignore_san_error_hosts)
+      else:
+        fp.write("#beast.exchange.https.ignore_san_error_hosts = \n")
 
     fp.close()
         
